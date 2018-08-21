@@ -114,3 +114,8 @@ _build
 _static
 _templates
 
+# Log folder
+log/
+
+# MNIST dataset
+MNIST/
