@@ -114,5 +114,3 @@ _build
 _static
 _templates
 
-# Output folder
-output/
