@@ -119,3 +119,6 @@ log/
 
 # MNIST dataset
 MNIST/
+
+# bash file to launch tensorboard
+tensorboard_port8000.sh
