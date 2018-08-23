@@ -94,8 +94,8 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
                 with torch.no_grad():
                     output = torch.cat((output, model(input_var)), 1)
 
-            dropout_mean = torch.empty(input.size(0), target.size(0))
-            for i in range(target.size(0)):
+            dropout_mean = torch.empty(input.size(0), 10)
+            for i in range(10):
                 dropout_mean[i] = output[i].mean()
 
             output = dropout_mean
