@@ -61,7 +61,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
     top1 = AverageMeter()
     data_time = AverageMeter()
 
-    # Switch to evaluate mode (turn off dropout & such )
+    # Switch to training mode (turn on dropout & such )
     model.eval()
 
     # Iterate over whole evaluation set
@@ -83,14 +83,31 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
             target = target.cuda(async=True)
 
         # Convert the input and its labels to Torch Variables
-        input_var = torch.autograd.Variable(input, volatile=True)
-        target_var = torch.autograd.Variable(target, volatile=True)
+        input_var = torch.autograd.Variable(input)
+        target_var = torch.autograd.Variable(target)
 
-        # Compute output
-        output = model(input_var)
+        # Get values of output with dropout turned on during validation of the last epoch
+        if logging_label == 'val' and epoch == 4:
+            model.train()
+            output = torch.Tensor()
+            for i in range(500):
+                with torch.no_grad():
+                    output = torch.cat((output, model(input_var)), 1)
+
+            dropout_mean = torch.empty(input.size(0), target.size(0))
+            for i in range(target.size(0)):
+                dropout_mean[i] = output[i].mean()
+
+            output = dropout_mean
+
+        # Standard output computation
+        else:
+            with torch.no_grad():
+                output = model(input_var)
 
         # Compute and record the loss
-        loss = criterion(output, target_var)
+        with torch.no_grad():
+            loss = criterion(output, target_var)
         losses.update(loss.data[0], input.size(0))
 
         # Compute and record the accuracy
