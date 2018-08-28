@@ -87,18 +87,24 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
         target_var = torch.autograd.Variable(target)
 
         # Get values of output with dropout turned on during validation of the last epoch
-        if logging_label == 'val' and epoch == 4:
+        if logging_label == 'test':
             model.train()
-            output = torch.Tensor()
-            for i in range(500):
+
+            # Number of samples of forward passes for each batch
+            n = 2000
+
+            # Compute a matrix that contains the outputs of the different forward passes with dropout activated
+            output_configs = np.zeros((n, input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
+
+            for i in range(n):
                 with torch.no_grad():
-                    output = torch.cat((output, model(input_var)), 1)
+                    output_configs[i] = model(input_var)
 
-            dropout_mean = torch.empty(input.size(0), 10)
-            for i in range(10):
-                dropout_mean[i] = output[i].mean()
+            output_std = output_configs.std(axis=0)
+            output_mean = output_configs.mean(axis=0)
+            output_std_mean = output_configs.std(axis=0).mean(axis=0)
 
-            output = dropout_mean
+            output = torch.from_numpy(output_mean * output_std_mean / output_std)
 
         # Standard output computation
         else:
