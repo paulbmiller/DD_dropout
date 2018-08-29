@@ -91,17 +91,24 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
             model.train()
 
             # Number of samples of forward passes for each batch
-            n = 2000
+            n = 250
 
             # Compute a matrix that contains the outputs of the different forward passes with dropout activated
+            # Matrix of size n, batch_size, nb_classes
             output_configs = np.zeros((n, input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
 
             for i in range(n):
                 with torch.no_grad():
                     output_configs[i] = model(input_var)
 
+
+            # Array of shape (batch_size, nb_classes) containing the standard deviation of outputs the subnetworks
             output_std = output_configs.std(axis=0)
+
+            # Array of shape (batch_size, nb_classes) containing the mean of the outputs of the subnetwork
             output_mean = output_configs.mean(axis=0)
+
+            # Array of shape (nb_classes,) containing the mean of the standard variation
             output_std_mean = output_configs.std(axis=0).mean(axis=0)
 
             output = torch.from_numpy(output_mean * output_std_mean / output_std)
