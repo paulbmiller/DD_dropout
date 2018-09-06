@@ -91,7 +91,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
             model.train()
 
             # Number of samples of forward passes for each batch
-            n = 250
+            n = 100
 
             # Compute a matrix that contains the outputs of the different forward passes with dropout activated
             # Matrix of size n, batch_size, nb_classes
@@ -117,6 +117,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
         else:
             with torch.no_grad():
                 output = model(input_var)
+
 
         # Compute and record the loss
         with torch.no_grad():
