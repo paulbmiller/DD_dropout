@@ -4,6 +4,16 @@ CNN with 3 conv layers and a fully connected classification layer
 
 import torch.nn as nn
 
+class Flatten(nn.Module):
+    """
+    Flatten a convolution block into a simple vector.
+
+    Replaces the flattening line (view) often found into forward() methods of networks. This makes it
+    easier to navigate the network with introspection
+    """
+    def forward(self, x):
+        x = x.view(x.size()[0], -1)
+        return x
 
 class BasicLinear(nn.Module):
     """
@@ -33,17 +43,18 @@ class BasicLinear(nn.Module):
         """
         super(BasicLinear, self).__init__()
 
-        self.expected_input_size = (32, 32)
+        self.expected_input_size = (28, 28)
 
         # First layer
         self.lin1 = nn.Sequential(
-            nn.Linear(2048, 2048),
+            Flatten(),
+            nn.Linear(28 * 28 * input_channels, 2048),
             nn.ReLU(inplace=True),
             nn.Dropout(0.5)
         )
         # Second layer
         self.lin2 = nn.Sequential(
-            nn.Linear(1024, 1024),
+            nn.Linear(2048, 1024),
             nn.ReLU(inplace=True),
             nn.Dropout(0.5)
         )
