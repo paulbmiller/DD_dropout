@@ -1,5 +1,5 @@
 """
-CNN with 3 conv layers and a fully connected classification layer
+Simple network with 1 conv layer, 1 linear layer and a fully connected classification layer
 """
 
 import torch.nn as nn
@@ -46,22 +46,24 @@ class BasicLinear(nn.Module):
         self.expected_input_size = (28, 28)
 
         # First layer
-        self.lin1 = nn.Sequential(
-            Flatten(),
-            nn.Linear(28 * 28 * input_channels, 2048),
+        self.conv = nn.Sequential(
+            nn.Conv2d(3, 64, kernel_size=3),
             nn.ReLU(inplace=True),
-            nn.Dropout(0.5)
+            nn.MaxPool2d(kernel_size=5, stride=3),
+            nn.Dropout2d()
         )
+
         # Second layer
-        self.lin2 = nn.Sequential(
-            nn.Linear(2048, 1024),
+        self.lin = nn.Sequential(
+            Flatten(),
+            nn.Linear(64 * 8 * 8, 4096),
             nn.ReLU(inplace=True),
             nn.Dropout(0.5)
         )
 
         # Classification layer
         self.fc = nn.Sequential(
-            nn.Linear(1024, output_channels)
+            nn.Linear(4096, output_channels)
         )
 
     def forward(self, x):
@@ -78,7 +80,7 @@ class BasicLinear(nn.Module):
         Variable
             Activations of the fully connected layer
         """
-        x = self.lin1(x)
-        x = self.lin2(x)
+        x = self.conv(x)
+        x = self.lin(x)
         x = self.fc(x)
         return x

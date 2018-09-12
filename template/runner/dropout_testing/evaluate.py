@@ -87,7 +87,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
         target_var = torch.autograd.Variable(target)
 
         # Get values of output with dropout turned on during validation of the last epoch
-        if False:
+        if logging_label == 'test':
             model.train()
 
             # Number of samples of forward passes for each batch
