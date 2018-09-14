@@ -91,8 +91,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
             model.train()
 
             # Number of samples of forward passes for each batch
-            n = 100
-
+            n = 250
             # Compute a matrix that contains the outputs of the different forward passes with dropout activated
             # Matrix of size n, batch_size, nb_classes
             output_configs = np.zeros((n, input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)

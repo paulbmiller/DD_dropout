@@ -1,5 +1,5 @@
 """
-Simple network with 1 conv layer, 1 linear layer and a fully connected classification layer
+Simple network with 1 conv layer, 1 linear layer and 1 fully connected classification layer
 """
 
 import torch.nn as nn
@@ -15,24 +15,24 @@ class Flatten(nn.Module):
         x = x.view(x.size()[0], -1)
         return x
 
-class BasicLinear(nn.Module):
+class CNN_CIFAR(nn.Module):
     """
-    Simple feed forward linear neural network
+    Simple feed forward neural network
 
     Attributes
     ----------
     expected_input_size : tuple(int,int)
         Expected input size (width, height)
-    lin1 : torch.nn.Sequential
-    lin2 : torch.nn.Sequential
-    fc : torch.nn.Linear
+    conv : torch.nn.Sequential
+    lin : torch.nn.Sequential
+    fc : torch.nn.Sequential
         Final classification fully connected layer
 
     """
 
     def __init__(self, output_channels=10, input_channels=3, **kwargs):
         """
-        Creates a BasicLinear model from scratch.
+        Creates a CNN_CIFAR model from scratch.
 
         Parameters
         ----------
@@ -41,13 +41,13 @@ class BasicLinear(nn.Module):
         input_channels : int
             Dimensionality of the input, typically 3 for RGB
         """
-        super(BasicLinear, self).__init__()
+        super(CNN_CIFAR, self).__init__()
 
-        self.expected_input_size = (28, 28)
+        self.expected_input_size = (32, 32)
 
         # First layer
         self.conv = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=3),
+            nn.Conv2d(3, 64, kernel_size=7),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=5, stride=3),
             nn.Dropout2d()
@@ -58,7 +58,7 @@ class BasicLinear(nn.Module):
             Flatten(),
             nn.Linear(64 * 8 * 8, 4096),
             nn.ReLU(inplace=True),
-            nn.Dropout(0.5)
+            nn.Dropout()
         )
 
         # Classification layer

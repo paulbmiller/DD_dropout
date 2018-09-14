@@ -10,7 +10,8 @@ from ._VGG import vgg11, vgg11_bn, vgg13, vgg13_bn, vgg16, vgg16_bn, vgg19, vgg1
 from ._Inception_v3 import inception_v3
 from ._DenseNet import densenet121, densenet161, densenet169, densenet201
 from .CNN_dropout import CNN_dropout
-from .BasicLinear import BasicLinear
+from .CNN_MNIST import CNN_MNIST
+from .CNN_CIFAR import CNN_CIFAR
 
 """
 Formula to compute the output size of a conv. layer
