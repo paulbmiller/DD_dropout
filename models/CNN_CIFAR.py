@@ -1,5 +1,5 @@
 """
-Simple network with 1 conv layer, 1 linear layer and 1 fully connected classification layer
+Simple network with 3 conv layer with max pooling and 1 fully connected classification layer
 """
 
 import torch.nn as nn
@@ -23,8 +23,9 @@ class CNN_CIFAR(nn.Module):
     ----------
     expected_input_size : tuple(int,int)
         Expected input size (width, height)
-    conv : torch.nn.Sequential
-    lin : torch.nn.Sequential
+    conv1 : torch.nn.Sequential
+    conv2 : torch.nn.Sequential
+    conv3 : torch.nn.Sequential
     fc : torch.nn.Sequential
         Final classification fully connected layer
 
@@ -46,23 +47,38 @@ class CNN_CIFAR(nn.Module):
         self.expected_input_size = (32, 32)
 
         # First layer
-        self.conv = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=7),
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(input_channels, 64, kernel_size=7, stride=1),
+            # 64 * 26 * 26
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=5, stride=3),
-            nn.Dropout2d()
+            nn.BatchNorm2d(64),
+            nn.MaxPool2d(kernel_size=4, stride=1)
+            # 64 * 23 * 23
         )
 
         # Second layer
-        self.lin = nn.Sequential(
-            Flatten(),
-            nn.Linear(64 * 8 * 8, 4096),
+        self.conv2 = nn.Sequential(
+            nn.Conv2d(64, 256, kernel_size=5, stride=2),
+            # 256 * 10 * 10
             nn.ReLU(inplace=True),
-            nn.Dropout()
+            nn.MaxPool2d(kernel_size=3, stride=1),
+            # 256 * 8 * 8
+            nn.Dropout2d()
+        )
+
+        # Third layer
+        self.conv3 = nn.Sequential(
+            nn.Conv2d(256, 4096, kernel_size=4, stride=2),
+            # 4096 * 3 * 3
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=1),
+            # 4096 * 1 * 1
+            nn.Dropout2d()
         )
 
         # Classification layer
         self.fc = nn.Sequential(
+            Flatten(),
             nn.Linear(4096, output_channels)
         )
 
@@ -80,7 +96,8 @@ class CNN_CIFAR(nn.Module):
         Variable
             Activations of the fully connected layer
         """
-        x = self.conv(x)
-        x = self.lin(x)
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.conv3(x)
         x = self.fc(x)
         return x
