@@ -46,40 +46,35 @@ class CNN_CIFAR(nn.Module):
 
         self.expected_input_size = (32, 32)
 
-        # First layer
+        # Convolutional layers
         self.conv1 = nn.Sequential(
-            nn.Conv2d(input_channels, 64, kernel_size=7, stride=1),
-            # 64 * 26 * 26
-            nn.ReLU(inplace=True),
-            nn.BatchNorm2d(64),
-            nn.MaxPool2d(kernel_size=4, stride=1)
-            # 64 * 23 * 23
+            nn.Conv2d(input_channels, 64, kernel_size=10, stride=2, padding=2),
+            nn.LeakyReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=1)
         )
-
-        # Second layer
         self.conv2 = nn.Sequential(
-            nn.Conv2d(64, 256, kernel_size=5, stride=2),
-            # 256 * 10 * 10
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=1),
-            # 256 * 8 * 8
-            nn.Dropout2d()
+            nn.Conv2d(64, 512, kernel_size=5, stride=1, padding=1),
+            nn.LeakyReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=1)
         )
 
-        # Third layer
         self.conv3 = nn.Sequential(
-            nn.Conv2d(256, 4096, kernel_size=4, stride=2),
-            # 4096 * 3 * 3
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=1),
-            # 4096 * 1 * 1
+            nn.Conv2d(512, 1024, kernel_size=3, stride=1, padding=1),
+            nn.LeakyReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=1)
+        )
+
+        self.conv4 = nn.Sequential(
+            nn.Conv2d(1024, 1024, kernel_size=3, stride=1),
+            nn.LeakyReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Dropout2d()
         )
 
         # Classification layer
         self.fc = nn.Sequential(
             Flatten(),
-            nn.Linear(4096, output_channels)
+            nn.Linear(1024 * 2 * 2, output_channels)
         )
 
     def forward(self, x):
@@ -99,5 +94,6 @@ class CNN_CIFAR(nn.Module):
         x = self.conv1(x)
         x = self.conv2(x)
         x = self.conv3(x)
+        x = self.conv4(x)
         x = self.fc(x)
         return x

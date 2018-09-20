@@ -12,6 +12,7 @@ from ._DenseNet import densenet121, densenet161, densenet169, densenet201
 from .CNN_dropout import CNN_dropout
 from .CNN_MNIST import CNN_MNIST
 from .CNN_CIFAR import CNN_CIFAR
+from .Dropout_paper import Dropout_paper
 
 """
 Formula to compute the output size of a conv. layer
