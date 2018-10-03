@@ -7,9 +7,9 @@ import torch
 
 # DeepDIVA
 import models
+import sys
 
-
-def parse_arguments():
+def parse_arguments(args=None):
     """
     Argument Parser
     """
@@ -31,7 +31,7 @@ def parse_arguments():
 
     ###############################################################################
     # Parse argument
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     # Recover dataset name
     dataset = os.path.basename(os.path.normpath(args.dataset_folder))
@@ -112,10 +112,18 @@ def _data_options(parser):
     parser_data.add_argument('--disable-databalancing',
                              default=False,
                              action='store_true',
-                             help='Supress data balancing')
+                             help='Suppress data balancing')
     parser_data.add_argument('--output-folder',
                              default='./output/',
                              help='where to save all output files.', )
+    parser_data.add_argument('--disable-dataset-integrity',
+                             default=False,
+                             action='store_true',
+                             help='Suppress the dataset integrity verification')
+    parser_data.add_argument('--enable-deep-dataset-integrity',
+                             default=False,
+                             action='store_true',
+                             help='Enable the deep dataset integrity verification')
 
 
 def _training_options(parser):
