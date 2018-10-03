@@ -118,7 +118,9 @@ _templates
 log/
 
 # MNIST dataset
-MNIST/
+MNIST/MNIST/
+CIFAR10/CIFAR10/
+SVHN/SVHN/
 
 # bash file to launch tensorboard
 tensorboard_port8000.sh
