@@ -51,15 +51,16 @@ class CNN_dropout(nn.Module):
 
         # First layer
         self.conv1 = nn.Sequential(
+            nn.Dropout(0.1),
             nn.Conv2d(input_channels, 24, kernel_size=5, stride=3),
             nn.LeakyReLU(),
-            nn.Dropout2d(0.5)
+            nn.Dropout2d(0.25)
         )
         # Second layer
         self.conv2 = nn.Sequential(
             nn.Conv2d(24, 48, kernel_size=3, stride=2),
             nn.LeakyReLU(),
-            nn.Dropout2d(0.5)
+            nn.Dropout2d(0.45)
         )
         # Third layer
         self.conv3 = nn.Sequential(
