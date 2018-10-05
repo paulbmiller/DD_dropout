@@ -20,12 +20,12 @@ def validate(val_loader, model, criterion, writer, epoch, no_cuda=False, log_int
     return _evaluate(val_loader, model, criterion, writer, epoch, 'val', no_cuda, log_interval, **kwargs)
 
 
-def test(test_loader, model, criterion, writer, epoch, no_cuda=False, log_interval=20, **kwargs):
+def test(test_loader, model, criterion, writer, epoch, no_cuda=False, log_interval=20, dropout_samples=0, **kwargs):
     """Wrapper for _evaluate() with the intent to test the model"""
-    return _evaluate(test_loader, model, criterion, writer, epoch, 'test', no_cuda, log_interval, **kwargs)
+    return _evaluate(test_loader, model, criterion, writer, epoch, 'test', no_cuda, log_interval, dropout_samples=0, **kwargs)
 
 
-def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cuda=False, log_interval=10, **kwargs):
+def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cuda=False, log_interval=10, dropout_samples=0, **kwargs):
     """
     The evaluation routine
 
@@ -87,16 +87,15 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
         target_var = torch.autograd.Variable(target)
 
         # Get values of output with dropout turned on during validation of the last epoch
-        if False:
+        if dropout_samples > 0:
             model.train()
 
             # Number of samples of forward passes for each batch
-            n = 25
             # Compute a matrix that contains the outputs of the different forward passes with dropout activated
             # Matrix of size n, batch_size, nb_classes
-            output_configs = np.zeros((n, input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
+            output_configs = np.zeros((dropout_samples, input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
 
-            for i in range(n):
+            for i in range(dropout_samples):
                 with torch.no_grad():
                     output_configs[i] = model(input_var)
 
