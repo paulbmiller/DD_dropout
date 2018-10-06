@@ -86,12 +86,13 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
         input_var = torch.autograd.Variable(input)
         target_var = torch.autograd.Variable(target)
 
-        # Get values of output with dropout turned on during validation of the last epoch
+        # Get values of output with dropout turned on during the testing phase
         if dropout_samples > 1:
             model.train()
 
-            # Number of samples of forward passes for each batch
-            # Compute a matrix that contains the outputs of the different forward passes with dropout activated
+            # dropout_samples is the number of samples of forward passes for each batch
+
+            # Compute a matrix that contains the outputs of the different forward passes with dropout active
             # Matrix of size n, batch_size, nb_classes
             output_configs = np.zeros((dropout_samples, input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
 
@@ -101,12 +102,14 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
 
 
             # Array of shape (batch_size, nb_classes) containing the standard deviation of outputs the subnetworks
+            # which shows the reliability of each subnetwork
             output_std = output_configs.std(axis=0)
 
             # Array of shape (batch_size, nb_classes) containing the mean of the outputs of the subnetwork
             output_mean = output_configs.mean(axis=0)
 
             # Array of shape (nb_classes,) containing the mean of the standard variation
+            # in order to not change the values drastically
             output_std_mean = output_configs.std(axis=0).mean(axis=0)
 
             output = torch.from_numpy(output_mean * output_std_mean / output_std)
@@ -120,6 +123,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
 
         # Standard output computation
         else:
+            model.eval()
             with torch.no_grad():
                 output = model(input_var)
 
