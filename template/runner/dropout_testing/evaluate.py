@@ -47,6 +47,8 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
         Specifies whether the GPU should be used or not. A value of 'True' means the CPU will be used.
     log_interval : int
         Interval limiting the logging of mini-batches. Default value of 10.
+    dropout_samples : int
+        Number of forward passes used for dropout adjustments at test time
 
     Returns
     -------
@@ -86,8 +88,8 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
         input_var = torch.autograd.Variable(input)
         target_var = torch.autograd.Variable(target)
 
-        # Get values of output with dropout turned on during the testing phase
-        if dropout_samples > 1:
+        # Compute forward passes with dropout turned on during the testing phase
+        if dropout_samples > 1 and logging_label =='test':
             model.train()
 
             # dropout_samples is the number of samples of forward passes for each batch
@@ -117,13 +119,12 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
             if not no_cuda:
                 output = output.cuda()
 
-        elif dropout_samples == 1:
+        elif dropout_samples == 1 and logging_label == 'test':
             model.train()
             output = model(input_var)
 
         # Standard output computation
         else:
-            model.eval()
             with torch.no_grad():
                 output = model(input_var)
 
