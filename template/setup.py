@@ -113,7 +113,10 @@ def set_up_model(output_channels, model_name, pretrained, optimizer_name, no_cud
     # Load saved model
     if load_model:
         if os.path.isfile(load_model):
-            model_dict = torch.load(load_model)
+            if not no_cuda:
+                model_dict = torch.load(load_model)
+            else:
+                model_dict = torch.load(load_model, map_location=lambda storage, loc: storage)
             logging.info('Loading a saved model')
             try:
                 model.load_state_dict(model_dict['state_dict'], strict=False)
