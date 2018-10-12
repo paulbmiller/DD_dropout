@@ -97,6 +97,6 @@ class ApplyModel:
     # These methods delegate their function to other classes in this package.
     # It is useful because sub-classes can selectively change the logic of certain parts only.
 
-    @classmethod
-    def _feature_extract(cls, writer, data_loader, model, epoch, **kwargs):
-        return evaluate.feature_extract(writer=writer, data_loader=data_loader, model=model, epoch=epoch, **kwargs)
+    #@classmethod
+    #def _feature_extract(cls, writer, data_loader, model, epoch, **kwargs):
+    #    return evaluate.feature_extract(writer=writer, data_loader=data_loader, model=model, epoch=epoch, **kwargs)

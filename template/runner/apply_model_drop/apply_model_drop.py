@@ -14,8 +14,8 @@ import pickle
 # DeepDIVA
 import models
 # Delegated
-from template.runner.apply_model import evaluate
-from template.runner.apply_model.setup import set_up_dataloader
+from template.runner.apply_model_drop import evaluate
+from template.runner.apply_model_drop.setup import set_up_dataloader
 from template.setup import set_up_model
 
 
@@ -23,7 +23,7 @@ from template.setup import set_up_model
 
 
 #######################################################################################################################
-class ApplyModel:
+class ApplyModelDrop:
     @staticmethod
     def single_run(writer, current_log_folder, model_name, epochs, lr, decay_lr,
                    output_channels, classify, **kwargs):
@@ -83,7 +83,7 @@ class ApplyModel:
                                          **kwargs)
 
         logging.info('Apply model to dataset')
-        results = ApplyModel._feature_extract(writer=writer,
+        results = ApplyModelDrop._feature_extract(writer=writer,
                                               data_loader=data_loader,
                                               model=model,
                                               epoch=-1,
