@@ -20,12 +20,12 @@ def validate(val_loader, model, criterion, writer, epoch, no_cuda=False, log_int
     return _evaluate(val_loader, model, criterion, writer, epoch, 'val', no_cuda, log_interval, **kwargs)
 
 
-def test(test_loader, model, criterion, writer, epoch, no_cuda=False, log_interval=20, **kwargs):
+def test(test_loader, model, criterion, writer, epoch, train_std, no_cuda=False, log_interval=20, **kwargs):
     """Wrapper for _evaluate() with the intent to test the model"""
-    return _evaluate(test_loader, model, criterion, writer, epoch, 'test', no_cuda, log_interval, **kwargs)
+    return _evaluate(test_loader, model, criterion, writer, epoch, 'test', no_cuda, log_interval, train_std, **kwargs)
 
 
-def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cuda=False, log_interval=10, dropout_samples=0, **kwargs):
+def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cuda=False, log_interval=10, train_std=None, dropout_samples=0, **kwargs):
     """
     The evaluation routine
 
@@ -110,11 +110,11 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
             # Array of shape (batch_size, nb_classes) containing the mean of the outputs of the subnetwork
             output_mean = output_configs.mean(axis=0)
 
-            # Array of shape (nb_classes,) containing the mean of the standard variation
-            # in order to not change the values drastically
-            output_std_mean = output_configs.std(axis=0).mean(axis=0)
+            # Array of shape (batch_size,) containing the mean of the standard variation of values of the mini-batch
+            #  in order to not change the values drastically
+            #output_std_mean = output_std.mean(axis=0)
 
-            output = torch.from_numpy(output_mean * output_std_mean / output_std)
+            output = torch.from_numpy(output_mean * train_std / output_std)
 
             if not no_cuda:
                 output = output.cuda()
@@ -127,7 +127,6 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
         else:
             with torch.no_grad():
                 output = model(input_var)
-
 
         # Compute and record the loss
         with torch.no_grad():

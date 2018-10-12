@@ -10,6 +10,8 @@ from tqdm import tqdm
 from util.misc import AverageMeter
 from util.evaluation.metrics import accuracy
 
+import numpy as np
+
 
 def train(train_loader, model, criterion, optimizer, writer, epoch, no_cuda=False, log_interval=25,
           **kwargs):
@@ -51,6 +53,8 @@ def train(train_loader, model, criterion, optimizer, writer, epoch, no_cuda=Fals
     # Switch to train mode (turn on dropout & stuff)
     model.train()
 
+    outputs = np.empty((0, len(train_loader.dataset.classes)), dtype=np.float32)
+
     # Iterate over whole training set
     end = time.time()
     pbar = tqdm(enumerate(train_loader), total=len(train_loader), unit='batch', ncols=150, leave=False)
@@ -68,9 +72,14 @@ def train(train_loader, model, criterion, optimizer, writer, epoch, no_cuda=Fals
         input_var = torch.autograd.Variable(input)
         target_var = torch.autograd.Variable(target)
 
-        acc, loss = train_one_mini_batch(model, criterion, optimizer, input_var, target_var, loss_meter, acc_meter)
+        acc, loss, out_mb = train_one_mini_batch(model, criterion, optimizer, input_var, target_var, loss_meter, acc_meter)
 
-        # Add loss and accuracy to Tensorboard
+        if not no_cuda:
+            out_mb = out_mb.cpu()
+
+        outputs = np.append(outputs, out_mb.detach().numpy(), axis=0)
+
+        # A dd loss and accuracy to Tensorboard
         if multi_run is None:
             writer.add_scalar('train/mb_loss', loss.data[0], epoch * len(train_loader) + batch_idx)
             writer.add_scalar('train/mb_accuracy', acc.cpu().numpy(), epoch * len(train_loader) + batch_idx)
@@ -105,7 +114,7 @@ def train(train_loader, model, criterion, optimizer, writer, epoch, no_cuda=Fals
                   'Batch time={batch_time.avg:.3f} ({data_time.avg:.3f} to load data)'
                   .format(epoch, batch_time=batch_time, data_time=data_time, loss=loss_meter, acc_meter=acc_meter))
 
-    return acc_meter.avg
+    return acc_meter.avg, outputs
 
 
 def train_one_mini_batch(model, criterion, optimizer, input_var, target_var, loss_meter, acc_meter):
@@ -154,4 +163,4 @@ def train_one_mini_batch(model, criterion, optimizer, input_var, target_var, los
     # Perform a step by updating the weights
     optimizer.step()
 
-    return acc, loss
+    return acc, loss, output
