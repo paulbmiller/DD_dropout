@@ -80,13 +80,13 @@ class DropoutTesting:
 
         for epoch in range(start_epoch, epochs):
             # Train
-            train_value[epoch], out = DropoutTesting._train(train_loader, model, criterion, optimizer, writer, epoch, **kwargs)
+            train_value[epoch], training_outputs = DropoutTesting._train(train_loader, model, criterion, optimizer, writer, epoch, **kwargs)
 
             # If you want to take the outputs of all epochs to calculate the std
-            #outputs = np.append(outputs, out, axis=0)
+            #outputs = np.append(outputs, training_outputs, axis=0)
 
             # Otherwise
-            outputs = out
+            outputs = training_outputs
 
             # Validate
             if epoch % validation_interval == 0:
