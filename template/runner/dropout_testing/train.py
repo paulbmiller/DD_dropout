@@ -77,7 +77,7 @@ def train(train_loader, model, criterion, optimizer, writer, epoch, no_cuda=Fals
         if not no_cuda:
             out_mb = out_mb.cpu()
 
-        outputs = np.append(outputs, out_mb.detach().numpy(), axis=0)
+        outputs = np.append(outputs, out_mb.numpy(), axis=0)
 
         # A dd loss and accuracy to Tensorboard
         if multi_run is None:
@@ -163,4 +163,6 @@ def train_one_mini_batch(model, criterion, optimizer, input_var, target_var, los
     # Perform a step by updating the weights
     optimizer.step()
 
-    return acc, loss, output
+    out_clone = output.detach().clone()
+
+    return acc, loss, out_clone
