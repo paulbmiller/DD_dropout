@@ -76,17 +76,15 @@ class DropoutTesting:
 
         val_value[-1] = DropoutTesting._validate(val_loader, model, criterion, writer, -1, **kwargs)
 
-        outputs = np.empty((0,10), np.float32)
-
         for epoch in range(start_epoch, epochs):
             # Train
-            train_value[epoch], training_outputs = DropoutTesting._train(train_loader, model, criterion, optimizer, writer, epoch, **kwargs)
+            train_value[epoch], wrong_outputs_mb = DropoutTesting._train(train_loader, model, criterion, optimizer, writer, epoch, **kwargs)
 
             # If you want to take the outputs of all epochs to calculate the std
             #outputs = np.append(outputs, training_outputs, axis=0)
 
             # Otherwise
-            outputs = training_outputs
+            wrong_outputs = np.mean(wrong_outputs_mb, axis=1)
 
             # Validate
             if epoch % validation_interval == 0:
@@ -96,7 +94,7 @@ class DropoutTesting:
             best_value = checkpoint(epoch, val_value[epoch], best_value, model, optimizer, current_log_folder)
 
         # Test
-        test_value = DropoutTesting._test(test_loader, model, criterion, writer, epochs - 1, train_std = outputs.std(axis=0), **kwargs)
+        test_value = DropoutTesting._test(test_loader, model, criterion, writer, epochs - 1, train_std = wrong_outputs, **kwargs)
         logging.info('Training completed')
 
         return train_value, val_value, test_value
