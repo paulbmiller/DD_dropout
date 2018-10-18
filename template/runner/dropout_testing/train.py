@@ -53,7 +53,7 @@ def train(train_loader, model, criterion, optimizer, writer, epoch, no_cuda=Fals
     # Switch to train mode (turn on dropout & stuff)
     model.train()
 
-    outputs = np.empty((0, len(train_loader.dataset.classes)), dtype=np.float32)
+    outputs = np.empty(len(train_loader.dataset.classes), dtype=np.float32)
 
     # Iterate over whole training set
     end = time.time()
@@ -74,10 +74,8 @@ def train(train_loader, model, criterion, optimizer, writer, epoch, no_cuda=Fals
 
         acc, loss, out_mb = train_one_mini_batch(model, criterion, optimizer, input_var, target_var, loss_meter, acc_meter)
 
-        if not no_cuda:
-            out_mb = out_mb.cpu()
-
-        outputs = np.append(outputs, out_mb.numpy(), axis=0)
+        if out_mb != []:
+            outputs = np.append(outputs, out_mb.std(axis=0))
 
         # A dd loss and accuracy to Tensorboard
         if multi_run is None:
@@ -114,7 +112,7 @@ def train(train_loader, model, criterion, optimizer, writer, epoch, no_cuda=Fals
                   'Batch time={batch_time.avg:.3f} ({data_time.avg:.3f} to load data)'
                   .format(epoch, batch_time=batch_time, data_time=data_time, loss=loss_meter, acc_meter=acc_meter))
 
-    return acc_meter.avg, outputs
+    return acc_meter.avg, np.split(outputs, len(train_loader.dataset.classes))
 
 
 def train_one_mini_batch(model, criterion, optimizer, input_var, target_var, loss_meter, acc_meter):
@@ -156,6 +154,26 @@ def train_one_mini_batch(model, criterion, optimizer, input_var, target_var, los
     acc = accuracy(output.data, target_var.data, topk=(1,))[0]
     acc_meter.update(acc[0], len(input_var))
 
+    y_pred = torch.argmax(output, dim=1)
+
+    wrong_count = 0
+    wrong_index = []
+
+    for i in range(len(input_var)):
+        if y_pred[i] != target_var[i]:
+            wrong_index.append(i)
+            wrong_count +=1
+
+    wrong_outputs = np.empty((wrong_count, len(output[0])), dtype=np.float32)
+
+    output = output.cpu()
+
+    for i in range(wrong_count):
+        wrong_outputs[i] = output.detach().numpy()[wrong_index[i]]
+
+    if wrong_count == 0:
+        wrong_outputs = []
+
     # Reset gradient
     optimizer.zero_grad()
     # Compute gradients
@@ -163,6 +181,4 @@ def train_one_mini_batch(model, criterion, optimizer, input_var, target_var, los
     # Perform a step by updating the weights
     optimizer.step()
 
-    out_clone = output.detach().clone()
-
-    return acc, loss, out_clone
+    return acc, loss, wrong_outputs
