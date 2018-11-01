@@ -15,17 +15,17 @@ from util.misc import AverageMeter, _prettyprint_logging_label, save_image_and_l
 from util.visualization.confusion_matrix_heatmap import make_heatmap
 
 
-def validate(val_loader, model, criterion, writer, epoch, no_cuda=False, log_interval=20, **kwargs):
+def validate(val_loader, model, criterion, writer, epoch, logging_label, val_classes, no_cuda=False, log_interval=20, **kwargs):
     """Wrapper for _evaluate() with the intent to validate the model."""
-    return _evaluate(val_loader, model, criterion, writer, epoch, 'val', no_cuda, log_interval, **kwargs)
+    return _evaluate(val_loader, model, criterion, writer, epoch, logging_label, None, None, val_classes, no_cuda, log_interval, **kwargs)
 
 
-def test(test_loader, model, criterion, writer, epoch, train_std, no_cuda=False, log_interval=20, **kwargs):
+def test(test_loader, model, criterion, writer, epoch, val_mean, val_std, val_classes, no_cuda=False, log_interval=20, **kwargs):
     """Wrapper for _evaluate() with the intent to test the model"""
-    return _evaluate(test_loader, model, criterion, writer, epoch, 'test', no_cuda, log_interval, train_std, **kwargs)
+    return _evaluate(test_loader, model, criterion, writer, epoch, 'test', val_mean, val_std, None, no_cuda, log_interval, **kwargs)
 
 
-def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cuda=False, log_interval=10, train_std=None, dropout_samples=0, **kwargs):
+def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_mean=None, val_std=None, val_classes=None, no_cuda=False, log_interval=10, dropout_samples=0, **kwargs):
     """
     The evaluation routine
 
@@ -80,10 +80,26 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
         wrong_predictions = 0
         wrong_predictions2 = 0
         wrong_predictions3 = 0
+        changed_wrong = 0
+        changed_right = 0
+        iterations = 0
+        """
         conf_median_right = np.array([], dtype=np.int32)
         conf_median_wrong = np.array([], dtype=np.int32)
         right_pred_median = 0
         wrong_pred_median = 0
+        """
+
+    if logging_label == 'start_val':
+        val_classes = np.zeros(len(data_loader.dataset.classes), dtype=np.int32)
+
+    if logging_label == 'last_val':
+        out_count = np.zeros(len(data_loader.dataset.classes), np.int32)
+        outputs = []
+        for i in range(len(data_loader.dataset.classes)):
+            outputs.append(np.empty((val_classes[i], len(data_loader.dataset.classes)), dtype=np.float64))
+        outputs = np.array(outputs, dtype=np.float64)
+
 
     pbar = tqdm(enumerate(data_loader), total=len(data_loader), unit='batch', ncols=150, leave=False)
     for batch_idx, (input, target) in pbar:
@@ -117,12 +133,11 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
 
             # Array of shape (batch_size, nb_classes) containing the standard deviation of outputs the subnetworks
             # which shows the reliability of each subnetwork
-            #output_std = output_configs.std(axis=0)
+            output_std = output_configs.std(axis=0)
 
             # Array of shape (batch_size, nb_classes) containing the mean of the outputs of the subnetwork
-            #output_mean = np.median(output_configs, axis=0)
             output_mean = np.mean(output_configs, axis=0)
-            out_median = np.median(output_configs, axis=0)
+            #out_median = np.median(output_configs, axis=0)
 
             # Array of shape (batch_size,) containing the mean of the standard variation of values of the mini-batch
             #  in order to not change the values drastically
@@ -135,8 +150,6 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
 
             target_var = target_var.cpu()
 
-            output = torch.from_numpy(output_mean)
-
             """
             Here we store the number of dropout samples that don't predict the same thing as the mean and
             separate them between those where the mean predicts the right value (in conflicting_right) and
@@ -144,21 +157,60 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
             """
             out_mean = np.copy(output_mean)
 
-            right_pred_mean_mb, wrong_pred_mean_mb = get_conflicting_configs(input.size(0), out_mean, target_var, dropout_samples, output_configs, conflicting_right, conflicting_wrong, True)
+            right_pred_mean_mb, wrong_pred_mean_mb, conflicting_right, conflicting_wrong, conflicting_configs\
+                = get_conflicting_configs(input.size(0), out_mean, target_var, dropout_samples, output_configs, conflicting_right, conflicting_wrong, True)
 
             right_predictions += right_pred_mean_mb
             wrong_predictions += wrong_pred_mean_mb
 
-            right_pred_median_mb, wrong_pred_median_mb = get_conflicting_configs(input.size(0), out_median, target_var, dropout_samples, output_configs, conf_median_right, conf_median_wrong)
+            """
+            right_pred_median_mb, wrong_pred_median_mb, conf_median_right, conf_median_wrong\
+                = get_conflicting_configs(input.size(0), out_median, target_var, dropout_samples, output_configs, conf_median_right, conf_median_wrong)
 
             right_pred_median += right_pred_median_mb
             wrong_pred_median += wrong_pred_median_mb
+            """
 
-            wrong_predictions2 += get_wrong_predictions(input.size(0), output, target, True)
+            wrong_predictions2 += get_wrong_predictions(input.size(0), out_mean, target, True)
 
-            wrong_predictions3 += get_wrong_predictions(input.size(0), output, target, False)
+            wrong_predictions3 += get_wrong_predictions(input.size(0), out_mean, target, False)
 
 
+            """
+            Multiply the top two values by the standard deviation of the other top value. This is in order to give more
+            importance to the value that doesn't fluctuate. We do this only when there is at least one of the dropout
+            configurations which have a different prediction value than the mean of all configurations.
+            for i in range(input.size(0)):
+                if conflicting_configs[i] > 0:
+                    iterations += 1
+                    top = output_mean[i].argsort()[-len(data_loader.dataset.classes):][::-1]
+                    #print("\nOutput mean: " + list_to_string(output_mean[i]))
+                    #print("\nTop values: " + list_to_string(top))
+                    #print("\nTarget value: " + str(target_var[i].numpy()))
+                    #print("\nOutput std: " + list_to_string(output_std[i]))
+                    output_mean[i][top[0]] = output_mean[i][top[0]] * (output_std[i][top[1]]+1)
+                    output_mean[i][top[1]] = output_mean[i][top[1]] * (output_std[i][top[0]]+1)
+                    if output_mean[i][top[1]] > output_mean[i][top[0]]:
+                        print("\nNew outputs: %0.2f, %0.2f\n" % (output_mean[i][top[0]], output_mean[i][top[1]]))
+                        print("Changed from first prediction to second\n")
+                        changed += 1
+            """
+
+
+            """
+            Get the distance between the output and the training arithmetic mean using the squared euclidian distance to
+            see if it looks like the mean of the outputs we had during training or not, but only if the Dropout configs
+            are giving conflicting predictions.
+            
+            distances = np.ones((input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
+            for i in range(input.size(0)):
+                if conflicting_configs[i] > 50:
+                    for j in range(len(data_loader.dataset.classes)):
+                        distances[i][j] = ((output_mean[i] - train_mean[j])**2).sum()
+
+            output_mean = output_mean * (1/distances)
+            """
+                 
             #optimal_value = output_std_mean / output_std
 
             """
@@ -197,7 +249,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
             #output=torch.from_numpy(output_mean)# 98.845997 ; 0.0599
             #output = torch.from_numpy(output_mean * output_std)# 98.702 ; 0.0856
 
-            #y_pred = torch.argmax(output, dim=1)
+            #y_pred = output_mean.argsort()[::-1]
 
             """
             print("\n\n")
@@ -230,8 +282,36 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
                 print("\n")
             """
 
+            """
+            for i in range(len(data_loader.dataset.classes)):
+                train_std[i] = softmax1(train_std[i])
+
+            for i in range(input.size(0)):
+                if conflicting_configs[i] >= 50:
+                    pred1 = y_pred[i][0]
+                    pred2 = y_pred[i][1]
+                    iterations += 1
+                    # > 0 -> 99.2
+                    # >= 200 -> 99.510
+                    #pred1_mult = output_mean[i][pred1] * train_std[pred1][pred1] / output_std[i][pred1]
+                    #pred2_mult = output_mean[i][pred2] * train_std[pred2][pred2] / output_std[i][pred2]
+
+                    # >= 50 -> 99.484
+                    # >= 200 -> 99.25
+                    pred1_mult = output_mean[i][pred1] / train_std[pred1][pred1] * output_std[i][pred1]
+                    pred2_mult = output_mean[i][pred2] / train_std[pred2][pred2] * output_std[i][pred2]
+
+                    if pred2_mult > pred1_mult:
+                        output_mean[i][pred1] = 0
+                        if pred1 == target_var[i]:
+                            changed_wrong += 1
+                        elif pred2 == target_var[i]:
+                            changed_right += 1
+            """
+
             #if wrong_count == 0:
             #    wrong_outputs = []
+            output = torch.from_numpy(output_mean)
 
             if not no_cuda:
                 target_var = target_var.cuda()
@@ -245,6 +325,24 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
         else:
             with torch.no_grad():
                 output = model(input_var)
+
+
+        if logging_label == 'start_val':
+            for i in range(input.size(0)):
+                val_classes[target_var[i]] += 1
+
+        elif logging_label == 'last_val':
+            for i in range(input.size(0)):
+                outputs[target_var[i]][out_count[target_var[i]]] = output[i]
+                out_count[target_var[i]] += 1
+
+            #val_mean = np.empty((len(data_loader.dataset.classes), len(data_loader.dataset.classes)), dtype=np.float32)
+            val_std = np.empty((len(data_loader.dataset.classes), len(data_loader.dataset.classes)), dtype=np.float32)
+
+            for i in range(len(data_loader.dataset.classes)):
+                #val_mean[i] = outputs[i].mean(axis=0)
+                val_std[i] = outputs[i].std(axis=0)
+
 
         # Compute and record the loss
         with torch.no_grad():
@@ -313,6 +411,14 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
         f.write("Number of wrong predictions if we take the 3rd class when we're wrong\n")
         f.write("%0.2f\n" % wrong_predictions3)
 
+        f.write("\nNumber of cases where we multiplied by the train_std and divided by the output std\n")
+        f.write("%0.2f\n" % iterations)
+        f.write("\nNumber of cases where this changed the prediction to the right value\n")
+        f.write("%0.2f\n" % changed_right)
+        f.write("\nNumber of cases where this added an error\n")
+        f.write("%0.2f\n" % changed_wrong)
+
+        """
         f.write("\nConflicting right median mean\n")
         f.write("%0.2f\n" % conf_median_right.mean())
         f.write("Conflicting right std\n")
@@ -335,6 +441,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
         f.write("%0.2f\n" % right_pred_median)
         f.write("Number of wrong predictions\n")
         f.write("%0.2f\n" % wrong_pred_median)
+        """
 
         f.close()
 
@@ -369,7 +476,12 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, no_cu
     # Generate a classification report for each epoch
     _log_classification_report(data_loader, epoch, preds, targets, writer)
 
-    return top1.avg
+    if logging_label == 'start_val':
+        return top1.avg, val_classes
+    if logging_label == 'last_val':
+        return top1.avg, val_mean, val_std
+    else:
+        return top1.avg
 
 
 def _log_classification_report(data_loader, epoch, preds, targets, writer):
@@ -441,7 +553,20 @@ def get_conflicting_configs(input_size, output, target, samples, output_configs,
             if replacemax:
                 output[i][predictions[i]] = output[i].min()
 
-    return right_pred_mb, wrong_pred_mb
+    return right_pred_mb, wrong_pred_mb, conf_right, conf_wrong, conflicting_configs
+
+def list_to_string(list):
+    str = ""
+
+    for i in range(len(list)):
+        if i > 0:
+            str = str + "  "
+        if isinstance(list[i], int):
+            str = str + "%d" % list[i]
+        else:
+            str = str + "%.2f" % list[i]
+
+    return str
 
 def softmax1(x):
     exp_x = np.exp(x)

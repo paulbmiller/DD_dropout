@@ -74,27 +74,23 @@ class DropoutTesting:
         val_value = np.zeros((epochs + 1 - start_epoch))
         train_value = np.zeros((epochs - start_epoch))
 
-        val_value[-1] = DropoutTesting._validate(val_loader, model, criterion, writer, -1, **kwargs)
+        val_value[-1], val_classes = DropoutTesting._validate(val_loader, model, criterion, writer, -1, 'start_val', **kwargs)
 
         for epoch in range(start_epoch, epochs):
             # Train
-            train_value[epoch], wrong_outputs_mb = DropoutTesting._train(train_loader, model, criterion, optimizer, writer, epoch, **kwargs)
-
-            # If you want to take the outputs of all epochs to calculate the std
-            #outputs = np.append(outputs, training_outputs, axis=0)
-
-            # Otherwise
-            wrong_outputs = np.mean(wrong_outputs_mb, axis=1)
+            train_value[epoch] = DropoutTesting._train(train_loader, model, criterion, optimizer, writer, epoch, **kwargs)
 
             # Validate
-            if epoch % validation_interval == 0:
-                val_value[epoch] = DropoutTesting._validate(val_loader, model, criterion, writer, epoch, **kwargs)
+            if epoch % validation_interval == 0 and epoch == epochs-1:
+                val_value[epoch], val_mean, val_std = DropoutTesting._validate(val_loader, model, criterion, writer, epoch, 'last_val', val_classes, **kwargs)
+            elif epoch % validation_interval == 0:
+                val_value[epoch] = DropoutTesting._validate(val_loader, model, criterion, writer, epoch, 'val', None, **kwargs)
             if decay_lr is not None:
                 adjust_learning_rate(lr=lr, optimizer=optimizer, epoch=epoch, decay_lr_epochs=decay_lr)
             best_value = checkpoint(epoch, val_value[epoch], best_value, model, optimizer, current_log_folder)
 
         # Test
-        test_value = DropoutTesting._test(test_loader, model, criterion, writer, epochs - 1, train_std = wrong_outputs, **kwargs)
+        test_value = DropoutTesting._test(test_loader, model, criterion, writer, epochs - 1, val_mean=val_mean, val_std=val_std, val_classes=val_classes, **kwargs)
         logging.info('Training completed')
 
         return train_value, val_value, test_value
@@ -135,9 +131,9 @@ class DropoutTesting:
         return train.train(train_loader, model, criterion, optimizer, writer, epoch, **kwargs)
 
     @classmethod
-    def _validate(cls, val_loader, model, criterion, writer, epoch, **kwargs):
-        return evaluate.validate(val_loader, model, criterion, writer, epoch, **kwargs)
+    def _validate(cls, val_loader, model, criterion, writer, epoch, logging_label, val_classes=None, **kwargs):
+        return evaluate.validate(val_loader, model, criterion, writer, epoch, logging_label, val_classes, **kwargs)
 
     @classmethod
-    def _test(cls, test_loader, model, criterion, writer, epoch, train_std, **kwargs):
-        return evaluate.test(test_loader, model, criterion, writer, epoch, train_std, **kwargs)
+    def _test(cls, test_loader, model, criterion, writer, epoch, val_mean, val_std, val_classes=None, **kwargs):
+        return evaluate.test(test_loader, model, criterion, writer, epoch, val_mean, val_std, val_classes, **kwargs)

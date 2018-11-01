@@ -53,8 +53,6 @@ def train(train_loader, model, criterion, optimizer, writer, epoch, no_cuda=Fals
     # Switch to train mode (turn on dropout & stuff)
     model.train()
 
-    outputs = np.empty(len(train_loader.dataset.classes), dtype=np.float32)
-
     # Iterate over whole training set
     end = time.time()
     pbar = tqdm(enumerate(train_loader), total=len(train_loader), unit='batch', ncols=150, leave=False)
@@ -72,10 +70,7 @@ def train(train_loader, model, criterion, optimizer, writer, epoch, no_cuda=Fals
         input_var = torch.autograd.Variable(input)
         target_var = torch.autograd.Variable(target)
 
-        acc, loss, out_mb = train_one_mini_batch(model, criterion, optimizer, input_var, target_var, loss_meter, acc_meter)
-
-        if out_mb != []:
-            outputs = np.append(outputs, out_mb.std(axis=0))
+        acc, loss = train_one_mini_batch(model, criterion, optimizer, input_var, target_var, loss_meter, acc_meter)
 
         # A dd loss and accuracy to Tensorboard
         if multi_run is None:
@@ -112,7 +107,7 @@ def train(train_loader, model, criterion, optimizer, writer, epoch, no_cuda=Fals
                   'Batch time={batch_time.avg:.3f} ({data_time.avg:.3f} to load data)'
                   .format(epoch, batch_time=batch_time, data_time=data_time, loss=loss_meter, acc_meter=acc_meter))
 
-    return acc_meter.avg, np.split(outputs, len(train_loader.dataset.classes))
+    return acc_meter.avg
 
 
 def train_one_mini_batch(model, criterion, optimizer, input_var, target_var, loss_meter, acc_meter):
@@ -154,8 +149,25 @@ def train_one_mini_batch(model, criterion, optimizer, input_var, target_var, los
     acc = accuracy(output.data, target_var.data, topk=(1,))[0]
     acc_meter.update(acc[0], len(input_var))
 
-    y_pred = torch.argmax(output, dim=1)
+    #y_pred = torch.argmax(output, dim=1)
 
+    """
+    out = output.cpu().detach().numpy()
+
+    for i in range(len(input_var)):
+        out_sum[target_var[i]] += out[i]
+        out_count[target_var[i]] += 1
+        if out_count[target_var[i]] > 1:
+            out_sqsum[target_var[i]] += np.square(out[i] - out_sum[target_var[i]]/out_count[target_var[i]])
+
+    
+    for i in range(len(input_var)):
+        if y_pred[i] == target_var[i]:
+            outputs[y_pred[i]] += output[i].cpu().detach().numpy()
+            outputs_count[y_pred[i]] += 1
+    """
+
+    """
     wrong_count = 0
     wrong_index = []
 
@@ -173,6 +185,7 @@ def train_one_mini_batch(model, criterion, optimizer, input_var, target_var, los
 
     if wrong_count == 0:
         wrong_outputs = []
+    """
 
     # Reset gradient
     optimizer.zero_grad()
@@ -181,4 +194,4 @@ def train_one_mini_batch(model, criterion, optimizer, input_var, target_var, los
     # Perform a step by updating the weights
     optimizer.step()
 
-    return acc, loss, wrong_outputs
+    return acc, loss

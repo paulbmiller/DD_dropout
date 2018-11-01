@@ -1,0 +1,250 @@
+
+Conflicting right mean
+0.24
+Conflicting right std
+2.44
+Conflicting right max
+59.00
+Conflicting right min
+0.00
+
+Conflicting wrong mean
+19.93
+Conflicting wrong std
+17.17
+Conflicting wrong max
+54.00
+Conflicting wrong min
+0.00
+
+Number of right predictions of the average of configs
+9946.00
+Number of wrong predictions of the average of configs
+54.00
+Number of wrong predictions if we take the 2nd class when we're wrong
+7.00
+Number of wrong predictions if we take the 3rd class when we're wrong
+2.00
+
+Conflicting right median mean
+0.24
+Conflicting right std
+2.44
+Conflicting right max
+59.00
+Conflicting right min
+0.00
+
+Conflicting wrong median mean
+19.93
+Conflicting wrong std
+17.17
+Conflicting wrong max
+54.00
+Conflicting wrong min
+0.00
+
+Number of right predictions by using the median
+9946.00
+Number of wrong predictions
+54.00
+
+Conflicting right mean
+0.22
+Conflicting right std
+2.47
+Conflicting right max
+54.00
+Conflicting right min
+0.00
+
+Conflicting wrong mean
+19.38
+Conflicting wrong std
+18.41
+Conflicting wrong max
+65.00
+Conflicting wrong min
+0.00
+
+Number of right predictions of the average of configs
+9931.00
+Number of wrong predictions of the average of configs
+69.00
+Number of wrong predictions if we take the 2nd class when we're wrong
+9.00
+Number of wrong predictions if we take the 3rd class when we're wrong
+3.00
+
+Conflicting right median mean
+0.22
+Conflicting right std
+2.47
+Conflicting right max
+54.00
+Conflicting right min
+0.00
+
+Conflicting wrong median mean
+19.38
+Conflicting wrong std
+18.41
+Conflicting wrong max
+65.00
+Conflicting wrong min
+0.00
+
+Number of right predictions by using the median
+9931.00
+Number of wrong predictions
+69.00
+
+Conflicting right mean
+0.22
+Conflicting right std
+2.31
+Conflicting right max
+57.00
+Conflicting right min
+0.00
+
+Conflicting wrong mean
+20.05
+Conflicting wrong std
+18.08
+Conflicting wrong max
+61.00
+Conflicting wrong min
+0.00
+
+Number of right predictions of the average of configs
+9957.00
+Number of wrong predictions of the average of configs
+43.00
+Number of wrong predictions if we take the 2nd class when we're wrong
+5.00
+Number of wrong predictions if we take the 3rd class when we're wrong
+2.00
+
+Conflicting right median mean
+0.22
+Conflicting right std
+2.31
+Conflicting right max
+57.00
+Conflicting right min
+0.00
+
+Conflicting wrong median mean
+20.05
+Conflicting wrong std
+18.08
+Conflicting wrong max
+61.00
+Conflicting wrong min
+0.00
+
+Number of right predictions by using the median
+9957.00
+Number of wrong predictions
+43.00
+
+Conflicting right mean
+0.23
+Conflicting right std
+2.50
+Conflicting right max
+59.00
+Conflicting right min
+0.00
+
+Conflicting wrong mean
+21.47
+Conflicting wrong std
+18.67
+Conflicting wrong max
+68.00
+Conflicting wrong min
+0.00
+
+Number of right predictions of the average of configs
+9943.00
+Number of wrong predictions of the average of configs
+57.00
+Number of wrong predictions if we take the 2nd class when we're wrong
+5.00
+Number of wrong predictions if we take the 3rd class when we're wrong
+1.00
+
+Conflicting right median mean
+0.23
+Conflicting right std
+2.58
+Conflicting right max
+64.00
+Conflicting right min
+0.00
+
+Conflicting wrong median mean
+20.59
+Conflicting wrong std
+17.68
+Conflicting wrong max
+56.00
+Conflicting wrong min
+0.00
+
+Number of right predictions by using the median
+9944.00
+Number of wrong predictions
+56.00
+
+Conflicting right mean
+0.21
+Conflicting right std
+2.15
+Conflicting right max
+55.00
+Conflicting right min
+0.00
+
+Conflicting wrong mean
+20.27
+Conflicting wrong std
+17.05
+Conflicting wrong max
+50.00
+Conflicting wrong min
+0.00
+
+Number of right predictions of the average of configs
+9960.00
+Number of wrong predictions of the average of configs
+40.00
+Number of wrong predictions if we take the 2nd class when we're wrong
+6.00
+Number of wrong predictions if we take the 3rd class when we're wrong
+3.00
+
+Conflicting right median mean
+0.22
+Conflicting right std
+2.20
+Conflicting right max
+55.00
+Conflicting right min
+0.00
+
+Conflicting wrong median mean
+19.51
+Conflicting wrong std
+16.58
+Conflicting wrong max
+46.00
+Conflicting wrong min
+0.00
+
+Number of right predictions by using the median
+9961.00
+Number of wrong predictions
+39.00
