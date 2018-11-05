@@ -391,6 +391,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
     if dropout_samples > 1 and logging_label == 'test':
         f = open("log/predictions_info.txt", 'a')
 
+        f.write("---------------RUN START---------------\n\n")
         f.write("\nConflicting right mean\n")
         f.write("%0.2f\n" % conflicting_right.mean())
         f.write("Conflicting right std\n")
@@ -451,7 +452,14 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
         """
 
         f.write("\nNumber of different predictions using standard dropout instead of the mean of " + str(dropout_samples) + " samples\n")
-        f.write(str(diff_predictions_dropout) + "\n")
+        f.write(str(diff_predictions_dropout) + "\n\n")
+
+        f.close()
+        f = open("log/predictions_info.txt", 'ab')
+
+        np.savetxt(f, val_mean, delimiter=',', header="Validation mean", fmt='%0.2f')
+
+        np.savetxt(f, val_std, delimiter=',', header="Validation std", fmt='%0.2f')
 
         f.close()
 
