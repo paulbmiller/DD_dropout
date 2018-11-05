@@ -83,6 +83,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
         changed_wrong = 0
         changed_right = 0
         iterations = 0
+        diff_predictions_dropout = 0
         """
         conf_median_right = np.array([], dtype=np.int32)
         conf_median_wrong = np.array([], dtype=np.int32)
@@ -97,8 +98,8 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
         out_count = np.zeros(len(data_loader.dataset.classes), np.int32)
         outputs = []
         for i in range(len(data_loader.dataset.classes)):
-            outputs.append(np.empty((val_classes[i], len(data_loader.dataset.classes)), dtype=np.float64))
-        outputs = np.array(outputs, dtype=np.float64)
+            outputs.append(np.empty((val_classes[i], len(data_loader.dataset.classes)), dtype=np.float32))
+        outputs = np.array(outputs, dtype=np.float32)
 
 
     pbar = tqdm(enumerate(data_loader), total=len(data_loader), unit='batch', ncols=150, leave=False)
@@ -118,7 +119,16 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
 
         # Compute forward passes with dropout turned on during the testing phase
         if dropout_samples > 1 and logging_label =='test':
+            with torch.no_grad():
+                real_dropout_output = model(input_var)
+                if no_cuda:
+                    real_dropout_output = real_dropout_output.numpy()
+                else:
+                    real_dropout_output = real_dropout_output.cpu().numpy()
+
             model.train()
+
+
 
             # dropout_samples is the number of samples of forward passes for each batch
 
@@ -156,6 +166,10 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
             those where the mean predicts the wrong value (in conflicting_wrong)
             """
             out_mean = np.copy(output_mean)
+
+            for i in range(input.size(0)):
+                if output_mean.argmax(axis=1)[i] != real_dropout_output.argmax(axis=1)[i]:
+                    diff_predictions_dropout += 1
 
             right_pred_mean_mb, wrong_pred_mean_mb, conflicting_right, conflicting_wrong, conflicting_configs\
                 = get_conflicting_configs(input.size(0), out_mean, target_var, dropout_samples, output_configs, conflicting_right, conflicting_wrong, True)
@@ -336,13 +350,6 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
                 outputs[target_var[i]][out_count[target_var[i]]] = output[i]
                 out_count[target_var[i]] += 1
 
-            #val_mean = np.empty((len(data_loader.dataset.classes), len(data_loader.dataset.classes)), dtype=np.float32)
-            val_std = np.empty((len(data_loader.dataset.classes), len(data_loader.dataset.classes)), dtype=np.float32)
-
-            for i in range(len(data_loader.dataset.classes)):
-                #val_mean[i] = outputs[i].mean(axis=0)
-                val_std[i] = outputs[i].std(axis=0)
-
 
         # Compute and record the loss
         with torch.no_grad():
@@ -403,20 +410,20 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
         f.write("%0.2f\n" % conflicting_wrong.min())
 
         f.write("\nNumber of right predictions of the average of configs\n")
-        f.write("%0.2f\n" % right_predictions)
+        f.write(str(right_predictions) + "\n")
         f.write("Number of wrong predictions of the average of configs\n")
-        f.write("%0.2f\n" % wrong_predictions)
+        f.write(str(wrong_predictions) + "\n")
         f.write("Number of wrong predictions if we take the 2nd class when we're wrong\n")
-        f.write("%0.2f\n" % wrong_predictions2)
+        f.write(str(wrong_predictions2) + "\n")
         f.write("Number of wrong predictions if we take the 3rd class when we're wrong\n")
-        f.write("%0.2f\n" % wrong_predictions3)
+        f.write(str(wrong_predictions3) + "\n")
 
         f.write("\nNumber of cases where we multiplied by the train_std and divided by the output std\n")
-        f.write("%0.2f\n" % iterations)
+        f.write(str(iterations) + "\n")
         f.write("\nNumber of cases where this changed the prediction to the right value\n")
-        f.write("%0.2f\n" % changed_right)
+        f.write(str(changed_right) + "\n")
         f.write("\nNumber of cases where this added an error\n")
-        f.write("%0.2f\n" % changed_wrong)
+        f.write(str(changed_wrong) + "\n")
 
         """
         f.write("\nConflicting right median mean\n")
@@ -442,6 +449,9 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
         f.write("Number of wrong predictions\n")
         f.write("%0.2f\n" % wrong_pred_median)
         """
+
+        f.write("\nNumber of different predictions using standard dropout instead of the mean of " + str(dropout_samples) + " samples\n")
+        f.write(str(diff_predictions_dropout) + "\n")
 
         f.close()
 
@@ -478,7 +488,21 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
 
     if logging_label == 'start_val':
         return top1.avg, val_classes
+
     if logging_label == 'last_val':
+        val_mean = np.empty((len(data_loader.dataset.classes), len(data_loader.dataset.classes)), dtype=np.float32)
+        val_std = np.empty((len(data_loader.dataset.classes), len(data_loader.dataset.classes)), dtype=np.float32)
+
+        for i in range(len(data_loader.dataset.classes)):
+            val_mean[i] = outputs[i].mean(axis=0)
+            val_std[i] = outputs[i].std(axis=0)
+
+        print("\nVAL MEAN")
+        print(val_mean)
+
+        print("\nVAL STD")
+        print(val_std)
+
         return top1.avg, val_mean, val_std
     else:
         return top1.avg
