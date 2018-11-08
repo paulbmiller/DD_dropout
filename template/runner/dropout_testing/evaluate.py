@@ -76,20 +76,41 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
     if dropout_samples > 1 and logging_label == 'test':
         conflicting_right = np.array([], dtype=np.int32)
         conflicting_wrong = np.array([], dtype=np.int32)
+        nb_conflicting = 0
+        nb_conflicting_25 = 0
+        nb_conflicting_50 = 0
+        nb_conflicting_100 = 0
+        nb_conflicting_200 = 0
         right_predictions = 0
         wrong_predictions = 0
         wrong_predictions2 = 0
         wrong_predictions3 = 0
-        changed_wrong = 0
-        changed_right = 0
-        iterations = 0
+        #changed_wrong = 0
+        #changed_right = 0
+        #iterations = 0
         diff_predictions_dropout = 0
+        diff_pred_dropout_better = 0
+        diff_pred_mean_better = 0
         """
         conf_median_right = np.array([], dtype=np.int32)
         conf_median_wrong = np.array([], dtype=np.int32)
         right_pred_median = 0
         wrong_pred_median = 0
+        
+        #count when the mean of samples, the validation mean and the validation std get preds right
+        count_RRR = 0
+        #mean and val-mean right but std wrong
+        count_RRW = 0
+        # mean wrong, val-mean and std right
+        count_WRR = 0
+        #etc.
+        count_RWW, count_WRW, count_WWW, count_RWR, count_WWR = 0,0,0,0,0
         """
+
+    elif dropout_samples > 0 and logging_label == 'test':
+        diff_predictions_dropout = 0
+        diff_pred_dropout_better = 0
+        diff_pred_mean_better = 0
 
     if logging_label == 'start_val':
         val_classes = np.zeros(len(data_loader.dataset.classes), dtype=np.int32)
@@ -99,7 +120,8 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
         outputs = []
         for i in range(len(data_loader.dataset.classes)):
             outputs.append(np.empty((val_classes[i], len(data_loader.dataset.classes)), dtype=np.float32))
-        outputs = np.array(outputs, dtype=np.float32)
+
+        outputs = np.array(outputs)
 
 
     pbar = tqdm(enumerate(data_loader), total=len(data_loader), unit='batch', ncols=150, leave=False)
@@ -117,16 +139,19 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
         input_var = torch.autograd.Variable(input)
         target_var = torch.autograd.Variable(target)
 
-        # Compute forward passes with dropout turned on during the testing phase
-        if dropout_samples > 1 and logging_label =='test':
+        model.eval()
+
+        if dropout_samples > 0:
             with torch.no_grad():
                 real_dropout_output = model(input_var)
                 if no_cuda:
                     real_dropout_output = real_dropout_output.numpy()
                 else:
                     real_dropout_output = real_dropout_output.cpu().numpy()
-
             model.train()
+
+        # Compute forward passes with dropout turned on during the testing phase
+        if dropout_samples > 1 and logging_label =='test':
 
 
 
@@ -143,7 +168,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
 
             # Array of shape (batch_size, nb_classes) containing the standard deviation of outputs the subnetworks
             # which shows the reliability of each subnetwork
-            output_std = output_configs.std(axis=0)
+            #output_std = output_configs.std(axis=0)
 
             # Array of shape (batch_size, nb_classes) containing the mean of the outputs of the subnetwork
             output_mean = np.mean(output_configs, axis=0)
@@ -164,15 +189,47 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
             Here we store the number of dropout samples that don't predict the same thing as the mean and
             separate them between those where the mean predicts the right value (in conflicting_right) and
             those where the mean predicts the wrong value (in conflicting_wrong)
+            
+            The out_mean array will be changed by the function get_conflicting_wrong when it is called with
+            the argument replacemax=True
             """
             out_mean = np.copy(output_mean)
 
             for i in range(input.size(0)):
-                if output_mean.argmax(axis=1)[i] != real_dropout_output.argmax(axis=1)[i]:
+                pred_mean = output_mean.argmax(axis=1)[i]
+                pred_dropout = real_dropout_output.argmax(axis=1)[i]
+                if pred_mean != pred_dropout:
                     diff_predictions_dropout += 1
+                    if pred_mean == target_var[i]:
+                        diff_pred_mean_better += 1
+                    elif pred_dropout == target_var[i]:
+                        diff_pred_dropout_better += 1
 
             right_pred_mean_mb, wrong_pred_mean_mb, conflicting_right, conflicting_wrong, conflicting_configs\
                 = get_conflicting_configs(input.size(0), out_mean, target_var, dropout_samples, output_configs, conflicting_right, conflicting_wrong, True)
+
+            for i in range(input.size(0)):
+                temp = conflicting_configs[i]
+                if temp >= 200:
+                    nb_conflicting += 1
+                    nb_conflicting_25 += 1
+                    nb_conflicting_50 += 1
+                    nb_conflicting_100 += 1
+                    nb_conflicting_200 += 1
+                elif temp >= 100:
+                    nb_conflicting += 1
+                    nb_conflicting_25 += 1
+                    nb_conflicting_50 += 1
+                    nb_conflicting_100 += 1
+                elif temp >= 50:
+                    nb_conflicting += 1
+                    nb_conflicting_25 += 1
+                    nb_conflicting_50 += 1
+                elif temp >= 25:
+                    nb_conflicting += 1
+                    nb_conflicting_25 += 1
+                elif temp > 0:
+                    nb_conflicting += 1
 
             right_predictions += right_pred_mean_mb
             wrong_predictions += wrong_pred_mean_mb
@@ -213,61 +270,46 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
 
             """
             Get the distance between the output and the training arithmetic mean using the squared euclidian distance to
-            see if it looks like the mean of the outputs we had during training or not, but only if the Dropout configs
+            see if it looks like the mean of the outputs we had during validation or not, but only if the Dropout configs
             are giving conflicting predictions.
+            Couldn't find a direct link with the accuracy of predictions
             
-            distances = np.ones((input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
+            
+            dist_mean = np.empty((input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
+            dist_std = np.empty((input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
+            
             for i in range(input.size(0)):
-                if conflicting_configs[i] > 50:
-                    for j in range(len(data_loader.dataset.classes)):
-                        distances[i][j] = ((output_mean[i] - train_mean[j])**2).sum()
-
-            output_mean = output_mean * (1/distances)
-            """
-                 
-            #optimal_value = output_std_mean / output_std
-
-            """
-            print("\noutput_std_mean[0]")
-            print(output_std_mean.shape)
-            print(output_std_mean)
-
-            print("\noptimal division")
-            print(optimal_value.shape)
-            print(optimal_value[0])
+                for j in range(len(data_loader.dataset.classes)):
+                    dist_mean[i][j] = -np.square(output_mean[i] - val_mean[j]).sum()
+                    dist_std[i][j] = np.amax(output_mean[i] * val_std[j] / output_std[i])
+                        
+            preds_val_mean = dist_mean.argmax(axis=1)
+            preds_val_std = dist_std.argmax(axis=1)
             
-            print("\ntrain_std")
-            print(train_std.shape)
-            print(train_std)
-
-            print("\noutput_std original[0]")
-            print(output_std.shape)
-            print(output_std[0])
-
-            output_std = softmax2(output_std)
-
-            print("\nsoftmaxed output_std")
-            print(output_std.shape)
-            print(output_std[0])
-
-            output_conf = 1 - output_std
-
-            print("\noutput_conf")
-            print(output_conf.shape)
-            print(output_conf[0])
-            """
-
-            #for i in range(input.size(0)):
-            #    output_std[i] = output_std[i] / train_std
-
-            #output=torch.from_numpy(output_mean)# 98.845997 ; 0.0599
-            #output = torch.from_numpy(output_mean * output_std)# 98.702 ; 0.0856
-
-            #y_pred = output_mean.argsort()[::-1]
-
-            """
-            print("\n\n")
-            print(output_std_mean)
+            for i in range(input.size(0)):
+                if conflicting_configs[i] > 100:
+                    if output_mean[i].argmax() == target_var[i]:
+                        if preds_val_mean[i] == target_var[i]:
+                            if preds_val_std[i] == target_var[i]:
+                                count_RRR += 1
+                            else:
+                                count_RRW += 1
+                        else:
+                            if preds_val_std[i] == target_var[i]:
+                                count_RWR += 1
+                            else:
+                                count_RWW += 1
+                    else:
+                        if preds_val_mean[i] == target_var[i]:
+                            if preds_val_std[i] == target_var[i]:
+                                count_WRR += 1
+                            else:
+                                count_WRW += 1
+                        else:
+                            if preds_val_std[i] == target_var[i]:
+                                count_WWR += 1
+                            else:
+                                count_WWW += 1
             """
 
             #wrong_count = 0.
@@ -287,41 +329,62 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
             for i in range(wrong_count):
                 print("\noutput")
                 print(output[wrong_index[i]])
-                print("\nstd_mean")
-                print(output_std_mean[wrong_index[i]])
                 print("\nstd")
                 print(output_std[wrong_index[i]])
-                print("\ntrain_std")
-                print(train_std)
-                print("\n")
             """
 
             """
-            for i in range(len(data_loader.dataset.classes)):
-                train_std[i] = softmax1(train_std[i])
-
             for i in range(input.size(0)):
-                if conflicting_configs[i] >= 50:
-                    pred1 = y_pred[i][0]
-                    pred2 = y_pred[i][1]
+                if conflicting_configs[i] > 100:
+                    pred = output_mean[i].argmax()
                     iterations += 1
-                    # > 0 -> 99.2
-                    # >= 200 -> 99.510
-                    #pred1_mult = output_mean[i][pred1] * train_std[pred1][pred1] / output_std[i][pred1]
-                    #pred2_mult = output_mean[i][pred2] * train_std[pred2][pred2] / output_std[i][pred2]
 
-                    # >= 50 -> 99.484
-                    # >= 200 -> 99.25
-                    pred1_mult = output_mean[i][pred1] / train_std[pred1][pred1] * output_std[i][pred1]
-                    pred2_mult = output_mean[i][pred2] / train_std[pred2][pred2] * output_std[i][pred2]
+                    output_mean[i] = output_mean[i] / val_std[pred] * output_std[i]
 
-                    if pred2_mult > pred1_mult:
-                        output_mean[i][pred1] = 0
-                        if pred1 == target_var[i]:
+                    pred2 = output_mean[i].argmax()
+
+                    if pred != pred2:
+                        if pred == target_var[i]:
                             changed_wrong += 1
                         elif pred2 == target_var[i]:
                             changed_right += 1
             """
+
+
+            """
+            Take the config with the most difference between the top 2 values (hoping to get the config that looks less
+            like other options)
+            => Drop of ~5% accuracy on CIFAR-10
+            for i in range(input.size(0)):
+                max_diff = 0
+                for j in range(dropout_samples):
+                    idx = (-output_configs[j][i]).argsort()
+                    for id in range(len(idx)):
+                        if idx[id] == 0:
+                            top_val = output_configs[j][i][id]
+                        elif idx[id] == 1:
+                            top2_val = output_configs[j][i][id]
+                    diff = top_val - top2_val
+                    if max_diff < diff:
+                        max_diff = diff
+                        output_mean[i] = output_configs[j][i]
+            """
+
+            """
+            Use the config that has the highest top value (hoping to get the config that is most sure of itself
+            => Drop of ~5% accuracy on CIFAR-10
+            for i in range(input.size(0)):
+                top_val = 0
+                for j in range(dropout_samples):
+                    idx = (-output_configs[j][i]).argsort()
+                    for id in range(len(idx)):
+                        if idx[id] == 0:
+                            top_val_config = output_configs[j][i][id]
+                    if top_val_config > top_val:
+                        top_val = top_val_config
+                        output_mean[i] = output_configs[j][i]
+            """
+
 
             #if wrong_count == 0:
             #    wrong_outputs = []
@@ -332,8 +395,23 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
                 output = output.cuda()
 
         elif dropout_samples == 1 and logging_label == 'test':
-            model.train()
-            output = model(input_var)
+            with torch.no_grad():
+                output = model(input_var)
+
+            if not no_cuda:
+                output_np = output.cpu().numpy()
+            else:
+                output_np = output_np.numpy()
+
+            for i in range(input.size(0)):
+                pred_mean = output_np.argmax(axis=1)[i]
+                pred_dropout = real_dropout_output.argmax(axis=1)[i]
+                if pred_mean != pred_dropout:
+                    diff_predictions_dropout += 1
+                    if pred_mean == target_var[i]:
+                        diff_pred_mean_better += 1
+                    elif pred_dropout == target_var[i]:
+                        diff_pred_dropout_better += 1
 
         # Standard output computation
         else:
@@ -347,7 +425,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
 
         elif logging_label == 'last_val':
             for i in range(input.size(0)):
-                outputs[target_var[i]][out_count[target_var[i]]] = output[i]
+                outputs[target_var[i]][out_count[target_var[i]]] = output[i].cpu().numpy()
                 out_count[target_var[i]] += 1
 
 
@@ -388,78 +466,109 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
                              Data='{data_time.avg:.3f}\t'.format(data_time=data_time))
 
 
-    if dropout_samples > 1 and logging_label == 'test':
+    if logging_label == 'test' and dropout_samples > 0:
         f = open("log/predictions_info.txt", 'a')
 
-        f.write("---------------RUN START---------------\n\n")
-        f.write("\nConflicting right mean\n")
-        f.write("%0.2f\n" % conflicting_right.mean())
-        f.write("Conflicting right std\n")
-        f.write("%0.2f\n" % conflicting_right.std())
-        f.write("Conflicting right max\n")
-        f.write("%0.2f\n" % conflicting_right.max())
-        f.write("Conflicting right min\n")
-        f.write("%0.2f\n" % conflicting_right.min())
+        f.write("\n\n---------------RUN START---------------\n\n")
+        if dropout_samples > 1:
+            f.write("\nNumber of predictions with at least 1 conflicting configs\n")
+            f.write(str(nb_conflicting)+"\n")
+            f.write("Number of predictions with at least 25 conflicting configs\n")
+            f.write(str(nb_conflicting_25) + "\n")
+            f.write("Number of predictions with at least 50 conflicting configs\n")
+            f.write(str(nb_conflicting_50) + "\n")
+            f.write("Number of predictions with at least 100 conflicting configs\n")
+            f.write(str(nb_conflicting_100) + "\n")
+            f.write("Number of predictions with at least 200 conflicting configs\n")
+            f.write(str(nb_conflicting_200) + "\n")
 
-        f.write("\nConflicting wrong mean\n")
-        f.write("%0.2f\n" % conflicting_wrong.mean())
-        f.write("Conflicting wrong std\n")
-        f.write("%0.2f\n" % conflicting_wrong.std())
-        f.write("Conflicting wrong max\n")
-        f.write("%0.2f\n" % conflicting_wrong.max())
-        f.write("Conflicting wrong min\n")
-        f.write("%0.2f\n" % conflicting_wrong.min())
+            f.write("\nConflicting right mean\n")
+            f.write("%0.2f\n" % conflicting_right.mean())
+            f.write("Conflicting right std\n")
+            f.write("%0.2f\n" % conflicting_right.std())
+            f.write("Conflicting right max\n")
+            f.write(str(conflicting_right.max()) + "\n")
+            f.write("Conflicting right min\n")
+            f.write(str(conflicting_right.min()) + "\n")
 
-        f.write("\nNumber of right predictions of the average of configs\n")
-        f.write(str(right_predictions) + "\n")
-        f.write("Number of wrong predictions of the average of configs\n")
-        f.write(str(wrong_predictions) + "\n")
-        f.write("Number of wrong predictions if we take the 2nd class when we're wrong\n")
-        f.write(str(wrong_predictions2) + "\n")
-        f.write("Number of wrong predictions if we take the 3rd class when we're wrong\n")
-        f.write(str(wrong_predictions3) + "\n")
+            f.write("\nConflicting wrong mean\n")
+            f.write("%0.2f\n" % conflicting_wrong.mean())
+            f.write("Conflicting wrong std\n")
+            f.write("%0.2f\n" % conflicting_wrong.std())
+            f.write("Conflicting wrong max\n")
+            f.write(str(conflicting_wrong.max()) + "\n")
+            f.write("Conflicting wrong min\n")
+            f.write(str(conflicting_wrong.min()) + "\n")
 
-        f.write("\nNumber of cases where we multiplied by the train_std and divided by the output std\n")
-        f.write(str(iterations) + "\n")
-        f.write("\nNumber of cases where this changed the prediction to the right value\n")
-        f.write(str(changed_right) + "\n")
-        f.write("\nNumber of cases where this added an error\n")
-        f.write(str(changed_wrong) + "\n")
+            f.write("\nNumber of right predictions of the average of configs\n")
+            f.write(str(right_predictions) + "\n")
+            f.write("Number of wrong predictions of the average of configs\n")
+            f.write(str(wrong_predictions) + "\n")
+            f.write("Number of wrong predictions if we take the 2nd class when we're wrong\n")
+            f.write(str(wrong_predictions2) + "\n")
+            f.write("Number of wrong predictions if we take the 3rd class when we're wrong\n")
+            f.write(str(wrong_predictions3) + "\n")
 
-        """
-        f.write("\nConflicting right median mean\n")
-        f.write("%0.2f\n" % conf_median_right.mean())
-        f.write("Conflicting right std\n")
-        f.write("%0.2f\n" % conf_median_right.std())
-        f.write("Conflicting right max\n")
-        f.write("%0.2f\n" % conf_median_right.max())
-        f.write("Conflicting right min\n")
-        f.write("%0.2f\n" % conf_median_right.min())
+            """
+            f.write("\nNumber of cases where we multiplied by the train_std and divided by the output std\n")
+            f.write(str(iterations))
+            f.write("\nNumber of cases where this changed the prediction to the right value\n")
+            f.write(str(changed_right))
+            f.write("\nNumber of cases where this added an error\n")
+            f.write(str(changed_wrong) + "\n")
+            """
 
-        f.write("\nConflicting wrong median mean\n")
-        f.write("%0.2f\n" % conf_median_wrong.mean())
-        f.write("Conflicting wrong std\n")
-        f.write("%0.2f\n" % conf_median_wrong.std())
-        f.write("Conflicting wrong max\n")
-        f.write("%0.2f\n" % conf_median_wrong.max())
-        f.write("Conflicting wrong min\n")
-        f.write("%0.2f\n" % conf_median_wrong.min())
 
-        f.write("\nNumber of right predictions by using the median\n")
-        f.write("%0.2f\n" % right_pred_median)
-        f.write("Number of wrong predictions\n")
-        f.write("%0.2f\n" % wrong_pred_median)
-        """
+            """
+            f.write("\nConflicting right median mean\n")
+            f.write("%0.2f\n" % conf_median_right.mean())
+            f.write("Conflicting right std\n")
+            f.write("%0.2f\n" % conf_median_right.std())
+            f.write("Conflicting right max\n")
+            f.write("%0.2f\n" % conf_median_right.max())
+            f.write("Conflicting right min\n")
+            f.write("%0.2f\n" % conf_median_right.min())
+    
+            f.write("\nConflicting wrong median mean\n")
+            f.write("%0.2f\n" % conf_median_wrong.mean())
+            f.write("Conflicting wrong std\n")
+            f.write("%0.2f\n" % conf_median_wrong.std())
+            f.write("Conflicting wrong max\n")
+            f.write("%0.2f\n" % conf_median_wrong.max())
+            f.write("Conflicting wrong min\n")
+            f.write("%0.2f\n" % conf_median_wrong.min())
+    
+            f.write("\nNumber of right predictions by using the median\n")
+            f.write("%0.2f\n" % right_pred_median)
+            f.write("Number of wrong predictions\n")
+            f.write("%0.2f\n" % wrong_pred_median)
+            """
 
         f.write("\nNumber of different predictions using standard dropout instead of the mean of " + str(dropout_samples) + " samples\n")
-        f.write(str(diff_predictions_dropout) + "\n\n")
+        f.write(str(diff_predictions_dropout) + "\n")
+        f.write("When standard dropout gets it right and the mean of samples doesn't\n")
+        f.write(str(diff_pred_dropout_better) + "\n")
+        f.write("When the mean of samples gets it right and standard dropout gets it wrong\n")
+        f.write(str(diff_pred_mean_better) + "\n\n")
+
+        """
+        f.write("\ncount_RRR, RRW, RWR, RWW, WRR, WRW, WWR, WWW\n")
+        f.write(str(count_RRR) + '\n')
+        f.write(str(count_RRW) + '\n')
+        f.write(str(count_RWR) + '\n')
+        f.write(str(count_RWW) + '\n')
+        f.write(str(count_WRR) + '\n')
+        f.write(str(count_WRW) + '\n')
+        f.write(str(count_WWR) + '\n')
+        f.write(str(count_WWW) + "\n\n")
+        """
 
         f.close()
         f = open("log/predictions_info.txt", 'ab')
 
-        np.savetxt(f, val_mean, delimiter=',', header="Validation mean", fmt='%0.2f')
+        np.savetxt(f, val_mean, delimiter=', ', header="Mean of outputs for every class during validation", fmt='%0.2f')
 
-        np.savetxt(f, val_std, delimiter=',', header="Validation std", fmt='%0.2f')
+        np.savetxt(f, val_std, delimiter=', ', header="Standard deviation of outputs for every class during validation", fmt='%0.2f')
 
         f.close()
 
@@ -504,12 +613,6 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
         for i in range(len(data_loader.dataset.classes)):
             val_mean[i] = outputs[i].mean(axis=0)
             val_std[i] = outputs[i].std(axis=0)
-
-        print("\nVAL MEAN")
-        print(val_mean)
-
-        print("\nVAL STD")
-        print(val_std)
 
         return top1.avg, val_mean, val_std
     else:
@@ -566,14 +669,15 @@ def get_wrong_predictions(input_size, output, target, replacemax=False):
 
 def get_conflicting_configs(input_size, output, target, samples, output_configs, conf_right, conf_wrong, replacemax=False):
     conflicting_configs = np.zeros(input_size, dtype=np.int32)
+    # get the predictions as an array of shape (batch_size) that contains the indexes of the top value i.e the prediction
     predictions = output.argmax(axis=1)
     right_pred_mb = 0
     wrong_pred_mb = 0
 
-    for i in range(samples):
-        for j in range(len(predictions)):
-            if predictions[j] != output_configs[i].argmax(axis=1)[j]:
-                conflicting_configs[j] += 1
+    for i in range(input_size):
+        for j in range(samples):
+            if predictions[i] != output_configs[j].argmax(axis=1)[i]:
+                conflicting_configs[i] += 1
 
     for i in range(input_size):
         if predictions[i] == target[i]:
