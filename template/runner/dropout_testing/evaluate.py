@@ -273,21 +273,21 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
             see if it looks like the mean of the outputs we had during validation or not, but only if the Dropout configs
             are giving conflicting predictions.
             Couldn't find a direct link with the accuracy of predictions
-            
-            
+
+
             dist_mean = np.empty((input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
             dist_std = np.empty((input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
             
             for i in range(input.size(0)):
                 for j in range(len(data_loader.dataset.classes)):
                     dist_mean[i][j] = -np.square(output_mean[i] - val_mean[j]).sum()
-                    dist_std[i][j] = np.amax(output_mean[i] * val_std[j] / output_std[i])
+                    dist_std[i][j] = -np.square(val_std[j] - output_std[i]).sum()
                         
             preds_val_mean = dist_mean.argmax(axis=1)
             preds_val_std = dist_std.argmax(axis=1)
             
             for i in range(input.size(0)):
-                if conflicting_configs[i] > 100:
+                if conflicting_configs[i] > 0:
                     if output_mean[i].argmax() == target_var[i]:
                         if preds_val_mean[i] == target_var[i]:
                             if preds_val_std[i] == target_var[i]:
@@ -704,13 +704,13 @@ def list_to_string(list):
 
     return str
 
-def softmax1(x):
+def softmax(x):
     exp_x = np.exp(x)
     exp_sum = exp_x.sum()
     return exp_x / exp_sum
 
-def softmax2(x):
-    exp_x = np.exp(x)
-    exp_sum = exp_x.sum(axis=1)
-    exp_x = np.transpose(exp_x)
-    return np.transpose(exp_x / exp_sum)
+
+
+
+
+

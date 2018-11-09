@@ -1,0 +1,360 @@
+
+
+---------------RUN START---------------
+
+
+Number of predictions with at least 1 conflicting configs
+5850
+Number of predictions with at least 25 conflicting configs
+3763
+Number of predictions with at least 50 conflicting configs
+3109
+Number of predictions with at least 100 conflicting configs
+2314
+Number of predictions with at least 200 conflicting configs
+1111
+
+Conflicting right mean
+33.83
+Conflicting right std
+66.62
+Conflicting right max
+371
+Conflicting right min
+0
+
+Conflicting wrong mean
+145.71
+Conflicting wrong std
+97.97
+Conflicting wrong max
+392
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+8053
+Number of wrong predictions of the average of configs
+1947
+Number of wrong predictions if we take the 2nd class when we're wrong
+859
+Number of wrong predictions if we take the 3rd class when we're wrong
+456
+
+Number of different predictions using standard dropout instead of the mean of 500 samples
+314
+When standard dropout gets it right and the mean of samples doesn't
+107
+When the mean of samples gets it right and standard dropout gets it wrong
+115
+
+# Mean of outputs for every class during validation
+11.33, -1.77, 2.48, -1.36, 0.23, -4.27, -4.13, -4.94, 3.08, -0.25
+-1.16, 26.61, -7.17, -10.56, -6.72, -5.36, 0.91, -9.50, 2.44, 10.65
+-0.60, -4.82, 9.24, 0.71, 0.93, 2.31, 0.44, -0.67, -2.92, -4.46
+-2.57, -3.87, -0.35, 6.69, 0.62, 4.10, -0.17, 0.03, -2.31, -2.30
+-1.88, -6.24, 2.42, 1.07, 10.55, 1.81, 0.20, 1.80, -4.57, -5.35
+-4.77, -4.79, 1.16, 3.33, -0.66, 12.55, -0.75, 0.22, -3.58, -3.01
+-5.53, -2.72, 3.48, 1.57, 1.84, 0.53, 14.98, -5.55, -4.85, -3.37
+-4.41, -5.72, -2.72, -2.87, 7.53, 6.83, -5.88, 21.20, -9.83, -4.70
+5.17, -0.59, -3.04, -2.37, -2.77, -4.27, -3.42, -7.12, 19.36, -0.04
+0.65, 5.66, -4.49, -3.43, -4.42, -3.73, -3.81, -4.67, 1.05, 17.09
+# Standard deviation of outputs for every class during validation
+7.99, 3.36, 4.13, 3.27, 2.91, 4.24, 3.95, 4.54, 4.31, 3.87
+4.13, 18.20, 6.26, 8.39, 4.76, 4.50, 3.88, 6.35, 4.25, 7.71
+3.55, 3.25, 7.79, 2.55, 3.46, 3.37, 3.29, 3.18, 3.67, 3.35
+2.94, 2.41, 2.68, 5.49, 2.84, 3.70, 3.65, 2.81, 2.72, 2.43
+3.71, 3.24, 3.02, 3.03, 7.85, 3.21, 3.22, 5.15, 4.13, 3.45
+3.93, 3.24, 3.53, 3.51, 4.47, 11.75, 3.72, 4.07, 3.34, 2.84
+3.79, 2.73, 3.46, 3.37, 3.31, 3.16, 10.43, 4.67, 3.59, 2.77
+4.30, 3.50, 4.80, 4.92, 6.45, 6.51, 6.04, 18.03, 7.91, 4.44
+4.41, 4.50, 3.36, 3.19, 4.10, 3.54, 3.30, 4.56, 12.22, 2.84
+4.06, 5.45, 3.48, 3.90, 3.56, 3.61, 3.96, 3.78, 3.85, 11.18
+
+
+---------------RUN START---------------
+
+
+Number of predictions with at least 1 conflicting configs
+5730
+Number of predictions with at least 25 conflicting configs
+3632
+Number of predictions with at least 50 conflicting configs
+3049
+Number of predictions with at least 100 conflicting configs
+2202
+Number of predictions with at least 200 conflicting configs
+978
+
+Conflicting right mean
+31.70
+Conflicting right std
+64.13
+Conflicting right max
+370
+Conflicting right min
+0
+
+Conflicting wrong mean
+134.59
+Conflicting wrong std
+96.67
+Conflicting wrong max
+386
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+7987
+Number of wrong predictions of the average of configs
+2013
+Number of wrong predictions if we take the 2nd class when we're wrong
+863
+Number of wrong predictions if we take the 3rd class when we're wrong
+429
+
+Number of different predictions using standard dropout instead of the mean of 500 samples
+296
+When standard dropout gets it right and the mean of samples doesn't
+63
+When the mean of samples gets it right and standard dropout gets it wrong
+146
+
+# Mean of outputs for every class during validation
+10.53, -1.74, 2.23, -1.49, 0.71, -5.57, -2.86, -4.67, 3.82, -0.65
+-1.67, 20.83, -6.84, -3.42, -6.16, -4.00, -1.33, -9.73, 4.67, 7.94
+0.48, -5.01, 9.87, 1.40, 0.92, 0.31, 2.12, -2.59, -2.19, -5.29
+-3.30, -5.10, -0.51, 9.20, 0.26, 3.44, 1.27, -0.72, -1.47, -2.96
+-3.61, -6.85, 1.79, 2.20, 12.14, 1.48, 1.81, 2.03, -5.61, -5.32
+-3.57, -4.80, 1.16, 5.94, -1.64, 9.60, -0.35, 0.24, -2.55, -3.87
+-4.68, -3.73, 0.70, 5.43, 1.47, -1.33, 17.26, -7.84, -2.39, -4.27
+-4.33, -6.67, -3.73, -0.24, 5.96, 5.99, -4.25, 17.31, -8.52, -2.11
+3.16, -2.14, -4.87, -1.51, -2.57, -6.49, -1.25, -5.88, 22.13, 0.22
+0.80, 4.59, -6.44, -0.30, -4.87, -3.11, -7.90, -4.11, 2.88, 19.86
+# Standard deviation of outputs for every class during validation
+7.19, 2.76, 4.63, 3.35, 2.98, 4.39, 3.85, 3.71, 4.74, 3.97
+3.98, 14.87, 4.63, 3.97, 4.28, 3.85, 3.73, 6.45, 5.14, 6.11
+3.92, 3.21, 8.55, 2.81, 3.82, 2.95, 3.85, 3.59, 3.54, 3.96
+3.14, 2.95, 2.71, 6.33, 3.35, 3.57, 4.10, 2.64, 2.96, 2.88
+3.76, 3.50, 2.95, 3.32, 8.89, 3.39, 3.08, 4.87, 4.88, 3.21
+2.85, 2.66, 3.59, 3.91, 5.63, 9.20, 3.51, 3.52, 3.25, 2.94
+3.63, 2.61, 3.51, 4.36, 3.63, 3.37, 11.07, 5.32, 3.80, 2.87
+3.89, 3.45, 5.39, 4.15, 5.32, 5.78, 4.61, 14.49, 7.34, 2.93
+3.90, 3.48, 4.16, 3.24, 3.39, 3.91, 2.74, 3.55, 12.77, 3.48
+4.67, 4.92, 4.15, 3.66, 3.97, 3.11, 7.18, 3.38, 4.23, 13.52
+
+
+---------------RUN START---------------
+
+
+Number of predictions with at least 1 conflicting configs
+5934
+Number of predictions with at least 25 conflicting configs
+3774
+Number of predictions with at least 50 conflicting configs
+3178
+Number of predictions with at least 100 conflicting configs
+2414
+Number of predictions with at least 200 conflicting configs
+1076
+
+Conflicting right mean
+35.53
+Conflicting right std
+68.30
+Conflicting right max
+389
+Conflicting right min
+0
+
+Conflicting wrong mean
+145.60
+Conflicting wrong std
+97.26
+Conflicting wrong max
+399
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+8092
+Number of wrong predictions of the average of configs
+1908
+Number of wrong predictions if we take the 2nd class when we're wrong
+824
+Number of wrong predictions if we take the 3rd class when we're wrong
+425
+
+Number of different predictions using standard dropout instead of the mean of 500 samples
+322
+When standard dropout gets it right and the mean of samples doesn't
+92
+When the mean of samples gets it right and standard dropout gets it wrong
+134
+
+# Mean of outputs for every class during validation
+10.38, -2.18, 3.15, -1.25, -0.25, -3.21, -2.77, -3.57, 0.42, -0.34
+-0.39, 26.55, -7.53, -8.39, -7.04, -7.76, -1.91, -8.32, 3.78, 10.71
+0.48, -5.41, 10.47, 0.78, 2.22, 1.23, 0.45, -1.44, -3.33, -5.06
+-2.26, -3.85, -0.09, 6.16, 0.74, 3.81, 0.42, -0.57, -1.95, -2.03
+-2.32, -7.25, 3.16, 0.38, 13.26, 2.56, -0.50, 3.47, -6.26, -6.28
+-3.91, -4.92, 2.72, 4.71, -2.12, 13.02, -0.82, 0.62, -4.98, -3.77
+-3.11, -2.82, 2.55, 1.09, 2.23, -0.41, 13.39, -6.42, -2.84, -3.36
+-2.39, -5.77, -2.52, -2.58, 6.29, 5.75, -6.53, 18.42, -8.03, -3.42
+5.55, 1.42, -4.21, -3.63, -2.90, -6.56, -0.81, -8.27, 17.62, 2.69
+1.00, 4.54, -4.38, -2.04, -3.50, -2.31, -4.19, -2.66, 0.24, 14.00
+# Standard deviation of outputs for every class during validation
+6.70, 3.22, 4.61, 2.97, 3.13, 3.24, 3.19, 3.95, 3.71, 3.67
+4.22, 20.63, 6.00, 7.27, 5.08, 6.80, 4.65, 6.56, 4.46, 7.94
+3.91, 3.38, 7.93, 2.35, 4.23, 3.40, 3.62, 3.32, 3.23, 3.58
+2.54, 2.28, 2.72, 4.79, 3.16, 3.58, 2.91, 2.68, 2.60, 2.34
+3.41, 3.77, 3.55, 3.06, 9.30, 3.40, 3.44, 5.43, 4.15, 3.88
+3.51, 3.08, 4.25, 3.56, 6.64, 12.39, 3.22, 3.39, 4.00, 2.92
+2.83, 2.59, 3.36, 2.99, 3.72, 3.29, 9.20, 4.93, 3.17, 2.75
+3.18, 3.05, 5.21, 4.89, 5.62, 4.29, 5.24, 14.29, 5.40, 3.16
+4.06, 3.65, 4.08, 3.45, 3.34, 4.58, 2.14, 5.43, 11.73, 3.22
+3.25, 4.79, 3.44, 2.86, 2.86, 2.52, 3.37, 2.86, 3.32, 9.15
+
+
+---------------RUN START---------------
+
+
+Number of predictions with at least 1 conflicting configs
+5773
+Number of predictions with at least 25 conflicting configs
+3722
+Number of predictions with at least 50 conflicting configs
+3083
+Number of predictions with at least 100 conflicting configs
+2216
+Number of predictions with at least 200 conflicting configs
+1043
+
+Conflicting right mean
+32.61
+Conflicting right std
+64.73
+Conflicting right max
+375
+Conflicting right min
+0
+
+Conflicting wrong mean
+143.62
+Conflicting wrong std
+99.01
+Conflicting wrong max
+376
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+8092
+Number of wrong predictions of the average of configs
+1908
+Number of wrong predictions if we take the 2nd class when we're wrong
+808
+Number of wrong predictions if we take the 3rd class when we're wrong
+411
+
+Number of different predictions using standard dropout instead of the mean of 500 samples
+323
+When standard dropout gets it right and the mean of samples doesn't
+115
+When the mean of samples gets it right and standard dropout gets it wrong
+126
+
+# Mean of outputs for every class during validation
+12.86, -3.12, 3.68, -1.53, -0.49, -5.58, -2.93, -5.28, 3.09, -0.93
+0.62, 22.99, -5.03, -7.25, -8.33, -6.15, -2.65, -8.77, 4.18, 10.42
+1.09, -5.44, 11.22, 1.03, 0.22, -0.08, 1.59, -2.09, -2.37, -5.20
+-1.92, -3.78, 0.01, 6.70, -0.22, 3.31, 0.94, -0.75, -1.78, -2.67
+-1.83, -6.51, 2.25, 1.91, 10.47, 1.42, 1.34, 1.46, -5.37, -5.77
+-3.17, -4.54, 1.99, 4.90, -2.79, 10.83, -0.16, -0.04, -3.03, -4.20
+-4.07, -2.30, 2.50, 4.13, -0.44, 0.41, 14.79, -6.72, -4.58, -3.98
+-1.09, -4.63, -1.11, -1.33, 2.31, 5.91, -5.46, 16.31, -8.42, -2.68
+6.02, -0.64, -3.05, -3.37, -3.56, -8.20, -1.42, -8.56, 21.73, 0.91
+0.62, 6.25, -4.01, -1.06, -6.08, -3.57, -4.77, -5.10, 0.76, 16.95
+# Standard deviation of outputs for every class during validation
+8.72, 3.50, 5.04, 2.82, 3.41, 4.29, 4.00, 4.56, 4.72, 3.93
+3.71, 16.30, 4.67, 6.17, 5.38, 4.71, 3.47, 5.68, 5.02, 8.01
+4.19, 3.85, 9.27, 2.23, 3.68, 3.18, 3.24, 3.50, 3.62, 3.90
+2.65, 2.29, 2.75, 5.02, 3.07, 3.53, 3.10, 2.43, 2.49, 2.28
+3.43, 3.61, 2.89, 2.60, 8.21, 3.24, 3.38, 4.23, 3.99, 3.55
+2.99, 2.66, 3.74, 3.35, 6.22, 10.77, 3.20, 3.39, 2.93, 3.15
+3.13, 2.57, 3.09, 2.96, 3.35, 3.15, 9.79, 4.87, 3.89, 2.64
+3.46, 2.56, 3.63, 4.26, 3.79, 5.88, 5.57, 13.21, 7.06, 2.87
+4.57, 3.65, 3.89, 3.41, 3.26, 5.21, 2.38, 5.30, 14.25, 3.35
+4.05, 5.48, 3.38, 2.89, 4.25, 3.02, 4.26, 3.57, 4.38, 11.81
+
+
+---------------RUN START---------------
+
+
+Number of predictions with at least 1 conflicting configs
+6175
+Number of predictions with at least 25 conflicting configs
+4025
+Number of predictions with at least 50 conflicting configs
+3364
+Number of predictions with at least 100 conflicting configs
+2505
+Number of predictions with at least 200 conflicting configs
+1113
+
+Conflicting right mean
+36.79
+Conflicting right std
+67.96
+Conflicting right max
+347
+Conflicting right min
+0
+
+Conflicting wrong mean
+140.01
+Conflicting wrong std
+96.85
+Conflicting wrong max
+401
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+7894
+Number of wrong predictions of the average of configs
+2106
+Number of wrong predictions if we take the 2nd class when we're wrong
+921
+Number of wrong predictions if we take the 3rd class when we're wrong
+499
+
+Number of different predictions using standard dropout instead of the mean of 500 samples
+323
+When standard dropout gets it right and the mean of samples doesn't
+104
+When the mean of samples gets it right and standard dropout gets it wrong
+130
+
+# Mean of outputs for every class during validation
+11.97, -2.63, 2.68, -0.63, -0.14, -3.97, -3.03, -3.85, 1.29, -1.48
+-2.28, 20.37, -6.43, -3.80, -8.30, -3.52, 0.89, -5.21, 0.79, 7.43
+0.81, -5.66, 9.36, 1.81, 0.13, 1.69, 2.16, -1.76, -2.66, -5.71
+-2.28, -4.58, 0.15, 8.27, -0.65, 4.31, 1.03, -0.50, -2.00, -3.80
+-1.41, -5.81, 2.68, 1.59, 9.16, 2.13, 1.50, 0.45, -4.76, -5.55
+-3.31, -5.57, 2.15, 6.60, -2.06, 12.82, -1.03, 0.05, -4.08, -5.70
+-6.34, -3.30, 2.80, 3.67, 0.98, 1.50, 17.64, -5.49, -5.42, -5.79
+-1.65, -5.42, -2.51, 0.80, 4.09, 5.77, -6.16, 17.52, -9.13, -3.80
+5.05, -1.71, -1.10, -2.00, -1.74, -4.96, -2.62, -4.49, 12.49, 0.25
+-0.06, 3.57, -2.38, -1.16, -5.56, -0.65, -5.22, -0.09, -1.88, 13.23
+# Standard deviation of outputs for every class during validation
+8.00, 3.52, 4.64, 2.75, 2.93, 3.84, 4.09, 3.88, 3.22, 4.03
+4.41, 15.88, 5.60, 4.43, 5.73, 3.79, 4.13, 3.96, 3.89, 6.03
+4.79, 3.73, 7.56, 2.71, 3.48, 3.49, 3.97, 3.31, 3.55, 3.98
+3.21, 2.54, 2.47, 5.68, 2.78, 3.58, 3.87, 2.71, 2.53, 2.48
+3.71, 2.78, 2.55, 2.91, 6.99, 3.02, 3.74, 4.23, 3.73, 3.10
+3.47, 3.65, 3.70, 4.15, 4.44, 11.99, 4.17, 3.63, 3.50, 4.54
+4.17, 2.75, 3.70, 3.42, 3.70, 2.93, 11.94, 4.18, 4.25, 3.62
+3.25, 2.89, 5.01, 3.40, 5.13, 5.10, 6.70, 15.31, 7.55, 3.07
+4.02, 3.35, 2.91, 3.12, 2.56, 3.60, 2.73, 3.16, 8.39, 3.00
+3.42, 4.24, 2.82, 3.09, 3.64, 2.78, 4.71, 2.92, 3.89, 8.83
