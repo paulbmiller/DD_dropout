@@ -141,17 +141,20 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
 
         model.eval()
 
-        if dropout_samples > 0:
+        if logging_label == 'test':
             with torch.no_grad():
                 real_dropout_output = model(input_var)
                 if no_cuda:
-                    real_dropout_output = real_dropout_output.numpy()
+                    real_dropout_output_np = real_dropout_output.numpy()
                 else:
-                    real_dropout_output = real_dropout_output.cpu().numpy()
+                    real_dropout_output_np = real_dropout_output.cpu().numpy()
             model.train()
 
+        if dropout_samples == 0 and logging_label == 'test':
+            output = real_dropout_output
+
         # Compute forward passes with dropout turned on during the testing phase
-        if dropout_samples > 1 and logging_label =='test':
+        elif dropout_samples > 1 and logging_label =='test':
 
 
 
@@ -197,7 +200,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
 
             for i in range(input.size(0)):
                 pred_mean = output_mean.argmax(axis=1)[i]
-                pred_dropout = real_dropout_output.argmax(axis=1)[i]
+                pred_dropout = real_dropout_output_np.argmax(axis=1)[i]
                 if pred_mean != pred_dropout:
                     diff_predictions_dropout += 1
                     if pred_mean == target_var[i]:
@@ -405,7 +408,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
 
             for i in range(input.size(0)):
                 pred_mean = output_np.argmax(axis=1)[i]
-                pred_dropout = real_dropout_output.argmax(axis=1)[i]
+                pred_dropout = real_dropout_output_np.argmax(axis=1)[i]
                 if pred_mean != pred_dropout:
                     diff_predictions_dropout += 1
                     if pred_mean == target_var[i]:
