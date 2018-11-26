@@ -260,7 +260,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
             wrong_predictions3 += get_wrong_predictions(input.size(0), out_mean, target, False)
 
             """
-            From the 3 predictions dropout, mean and median, pick the one which has the highest top value.
+            From the 3 predictions dropout, mean and median, pick the one which has the smallest top value.
             
             
             for i in range(input.size(0)):
@@ -268,12 +268,12 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
                 pred_mean = output_mean[i].argmax()
                 pred_median = out_median[i].argmax()
                 
-                if dropout_output_np[i][pred_drop] > output_mean[i][pred_mean]:
+                if dropout_output_np[i][pred_drop] < output_mean[i][pred_mean]:
                     output_mean[i] = dropout_output_np[i]
                     pred_mean = pred_drop
                     changed_to_dropout += 1
                 
-                if output_mean[i][pred_mean] < out_median[i][pred_median]:
+                if output_mean[i][pred_mean] > out_median[i][pred_median]:
                     output_mean[i] = out_median[i]
                     changed_to_median += 1
             """
@@ -282,6 +282,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
             From the 3 predictions dropout, mean and median, pick the one which has the biggest difference between the
             top 2 values.
             """
+
             for i in range(input.size(0)):
                 top_drop = dropout_output_np[i].argsort()[-len(data_loader.dataset.classes):][::-1]
                 top_mean = output_mean[i].argsort()[-len(data_loader.dataset.classes):][::-1]
@@ -291,13 +292,13 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
                 diff_mean = output_mean[i][top_mean[0]] - output_mean[i][top_mean[1]]
                 diff_median = out_median[i][top_median[0]] - out_median[i][top_median[1]]
                 
-                if diff_drop > diff_mean:
+                if diff_drop < diff_mean:
                     output_mean[i] = dropout_output_np[i]
                     diff_mean = diff_drop
                 
-                if diff_median > diff_mean:
+                if diff_median < diff_mean:
                     output_mean[i] = out_median[i]
-            
+
 
 
             """
