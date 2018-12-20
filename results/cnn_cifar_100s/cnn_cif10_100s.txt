@@ -1,0 +1,1180 @@
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+6536
+Right predictions from the arithmetic mean
+6535
+Right predictions from the median
+6544
+
+Number of predictions with at least 1 conflicting configs
+6490
+Number of predictions with at least 25 conflicting configs
+2950
+Number of predictions with at least 50 conflicting configs
+854
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+9.86
+Conflicting right std
+15.94
+Conflicting right max
+79
+Conflicting right min
+0
+
+Conflicting wrong mean
+27.81
+Conflicting wrong std
+20.64
+Conflicting wrong max
+86
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+6535
+Number of wrong predictions of the average of configs
+3465
+Number of wrong predictions if we take the 2nd class when we're wrong
+1756
+Number of wrong predictions if we take the 3rd class when we're wrong
+1061
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+176
+When only dropout gets it right
+61
+When only the average gets it right
+60
+When both methods give wrong predictions
+55
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+6829
+Right predictions from the arithmetic mean
+6825
+Right predictions from the median
+6830
+
+Number of predictions with at least 1 conflicting configs
+6471
+Number of predictions with at least 25 conflicting configs
+2833
+Number of predictions with at least 50 conflicting configs
+731
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+9.35
+Conflicting right std
+15.15
+Conflicting right max
+83
+Conflicting right min
+0
+
+Conflicting wrong mean
+27.95
+Conflicting wrong std
+19.81
+Conflicting wrong max
+89
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+6825
+Number of wrong predictions of the average of configs
+3175
+Number of wrong predictions if we take the 2nd class when we're wrong
+1603
+Number of wrong predictions if we take the 3rd class when we're wrong
+955
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+131
+When only dropout gets it right
+46
+When only the average gets it right
+42
+When both methods give wrong predictions
+43
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+6876
+Right predictions from the arithmetic mean
+6876
+Right predictions from the median
+6875
+
+Number of predictions with at least 1 conflicting configs
+6069
+Number of predictions with at least 25 conflicting configs
+2567
+Number of predictions with at least 50 conflicting configs
+644
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+8.52
+Conflicting right std
+14.69
+Conflicting right max
+83
+Conflicting right min
+0
+
+Conflicting wrong mean
+25.93
+Conflicting wrong std
+20.22
+Conflicting wrong max
+87
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+6876
+Number of wrong predictions of the average of configs
+3124
+Number of wrong predictions if we take the 2nd class when we're wrong
+1663
+Number of wrong predictions if we take the 3rd class when we're wrong
+948
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+147
+When only dropout gets it right
+42
+When only the average gets it right
+42
+When both methods give wrong predictions
+63
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+6957
+Right predictions from the arithmetic mean
+6942
+Right predictions from the median
+6956
+
+Number of predictions with at least 1 conflicting configs
+5890
+Number of predictions with at least 25 conflicting configs
+2541
+Number of predictions with at least 50 conflicting configs
+651
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+8.25
+Conflicting right std
+14.60
+Conflicting right max
+81
+Conflicting right min
+0
+
+Conflicting wrong mean
+26.24
+Conflicting wrong std
+19.97
+Conflicting wrong max
+90
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+6942
+Number of wrong predictions of the average of configs
+3058
+Number of wrong predictions if we take the 2nd class when we're wrong
+1562
+Number of wrong predictions if we take the 3rd class when we're wrong
+915
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+144
+When only dropout gets it right
+58
+When only the average gets it right
+43
+When both methods give wrong predictions
+43
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+6817
+Right predictions from the arithmetic mean
+6824
+Right predictions from the median
+6800
+
+Number of predictions with at least 1 conflicting configs
+6455
+Number of predictions with at least 25 conflicting configs
+2873
+Number of predictions with at least 50 conflicting configs
+817
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+9.50
+Conflicting right std
+15.48
+Conflicting right max
+77
+Conflicting right min
+0
+
+Conflicting wrong mean
+28.75
+Conflicting wrong std
+20.67
+Conflicting wrong max
+83
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+6824
+Number of wrong predictions of the average of configs
+3176
+Number of wrong predictions if we take the 2nd class when we're wrong
+1657
+Number of wrong predictions if we take the 3rd class when we're wrong
+1006
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+180
+When only dropout gets it right
+47
+When only the average gets it right
+54
+When both methods give wrong predictions
+79
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+7033
+Right predictions from the arithmetic mean
+7020
+Right predictions from the median
+7024
+
+Number of predictions with at least 1 conflicting configs
+6036
+Number of predictions with at least 25 conflicting configs
+2505
+Number of predictions with at least 50 conflicting configs
+622
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+8.45
+Conflicting right std
+14.71
+Conflicting right max
+73
+Conflicting right min
+0
+
+Conflicting wrong mean
+26.09
+Conflicting wrong std
+20.12
+Conflicting wrong max
+87
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+7020
+Number of wrong predictions of the average of configs
+2980
+Number of wrong predictions if we take the 2nd class when we're wrong
+1555
+Number of wrong predictions if we take the 3rd class when we're wrong
+906
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+131
+When only dropout gets it right
+52
+When only the average gets it right
+39
+When both methods give wrong predictions
+40
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+6919
+Right predictions from the arithmetic mean
+6928
+Right predictions from the median
+6921
+
+Number of predictions with at least 1 conflicting configs
+6404
+Number of predictions with at least 25 conflicting configs
+2785
+Number of predictions with at least 50 conflicting configs
+783
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+9.33
+Conflicting right std
+15.53
+Conflicting right max
+86
+Conflicting right min
+0
+
+Conflicting wrong mean
+28.30
+Conflicting wrong std
+20.05
+Conflicting wrong max
+84
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+6928
+Number of wrong predictions of the average of configs
+3072
+Number of wrong predictions if we take the 2nd class when we're wrong
+1583
+Number of wrong predictions if we take the 3rd class when we're wrong
+946
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+157
+When only dropout gets it right
+49
+When only the average gets it right
+58
+When both methods give wrong predictions
+50
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+6926
+Right predictions from the arithmetic mean
+6929
+Right predictions from the median
+6902
+
+Number of predictions with at least 1 conflicting configs
+6301
+Number of predictions with at least 25 conflicting configs
+2768
+Number of predictions with at least 50 conflicting configs
+717
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+9.23
+Conflicting right std
+15.24
+Conflicting right max
+83
+Conflicting right min
+0
+
+Conflicting wrong mean
+27.70
+Conflicting wrong std
+19.98
+Conflicting wrong max
+92
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+6929
+Number of wrong predictions of the average of configs
+3071
+Number of wrong predictions if we take the 2nd class when we're wrong
+1604
+Number of wrong predictions if we take the 3rd class when we're wrong
+918
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+155
+When only dropout gets it right
+53
+When only the average gets it right
+56
+When both methods give wrong predictions
+46
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+6782
+Right predictions from the arithmetic mean
+6782
+Right predictions from the median
+6775
+
+Number of predictions with at least 1 conflicting configs
+6455
+Number of predictions with at least 25 conflicting configs
+2869
+Number of predictions with at least 50 conflicting configs
+790
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+9.43
+Conflicting right std
+15.35
+Conflicting right max
+79
+Conflicting right min
+0
+
+Conflicting wrong mean
+28.27
+Conflicting wrong std
+20.48
+Conflicting wrong max
+89
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+6782
+Number of wrong predictions of the average of configs
+3218
+Number of wrong predictions if we take the 2nd class when we're wrong
+1741
+Number of wrong predictions if we take the 3rd class when we're wrong
+1022
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+136
+When only dropout gets it right
+43
+When only the average gets it right
+43
+When both methods give wrong predictions
+50
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+7010
+Right predictions from the arithmetic mean
+7000
+Right predictions from the median
+6997
+
+Number of predictions with at least 1 conflicting configs
+6176
+Number of predictions with at least 25 conflicting configs
+2606
+Number of predictions with at least 50 conflicting configs
+643
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+8.80
+Conflicting right std
+14.83
+Conflicting right max
+78
+Conflicting right min
+0
+
+Conflicting wrong mean
+26.92
+Conflicting wrong std
+19.91
+Conflicting wrong max
+86
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+7000
+Number of wrong predictions of the average of configs
+3000
+Number of wrong predictions if we take the 2nd class when we're wrong
+1542
+Number of wrong predictions if we take the 3rd class when we're wrong
+947
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+132
+When only dropout gets it right
+48
+When only the average gets it right
+38
+When both methods give wrong predictions
+46
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+7048
+Right predictions from the arithmetic mean
+7038
+Right predictions from the median
+7048
+
+Number of predictions with at least 1 conflicting configs
+6092
+Number of predictions with at least 25 conflicting configs
+2628
+Number of predictions with at least 50 conflicting configs
+684
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+8.87
+Conflicting right std
+15.14
+Conflicting right max
+78
+Conflicting right min
+0
+
+Conflicting wrong mean
+27.13
+Conflicting wrong std
+20.15
+Conflicting wrong max
+84
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+7038
+Number of wrong predictions of the average of configs
+2962
+Number of wrong predictions if we take the 2nd class when we're wrong
+1498
+Number of wrong predictions if we take the 3rd class when we're wrong
+881
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+132
+When only dropout gets it right
+47
+When only the average gets it right
+37
+When both methods give wrong predictions
+48
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+6926
+Right predictions from the arithmetic mean
+6920
+Right predictions from the median
+6921
+
+Number of predictions with at least 1 conflicting configs
+6336
+Number of predictions with at least 25 conflicting configs
+2700
+Number of predictions with at least 50 conflicting configs
+691
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+8.96
+Conflicting right std
+14.93
+Conflicting right max
+83
+Conflicting right min
+0
+
+Conflicting wrong mean
+27.29
+Conflicting wrong std
+19.97
+Conflicting wrong max
+83
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+6920
+Number of wrong predictions of the average of configs
+3080
+Number of wrong predictions if we take the 2nd class when we're wrong
+1590
+Number of wrong predictions if we take the 3rd class when we're wrong
+966
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+123
+When only dropout gets it right
+43
+When only the average gets it right
+37
+When both methods give wrong predictions
+43
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+6665
+Right predictions from the arithmetic mean
+6663
+Right predictions from the median
+6663
+
+Number of predictions with at least 1 conflicting configs
+6520
+Number of predictions with at least 25 conflicting configs
+2943
+Number of predictions with at least 50 conflicting configs
+822
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+9.60
+Conflicting right std
+15.58
+Conflicting right max
+83
+Conflicting right min
+0
+
+Conflicting wrong mean
+28.38
+Conflicting wrong std
+20.30
+Conflicting wrong max
+96
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+6663
+Number of wrong predictions of the average of configs
+3337
+Number of wrong predictions if we take the 2nd class when we're wrong
+1735
+Number of wrong predictions if we take the 3rd class when we're wrong
+1078
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+162
+When only dropout gets it right
+53
+When only the average gets it right
+51
+When both methods give wrong predictions
+58
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+7005
+Right predictions from the arithmetic mean
+7013
+Right predictions from the median
+7014
+
+Number of predictions with at least 1 conflicting configs
+5638
+Number of predictions with at least 25 conflicting configs
+2307
+Number of predictions with at least 50 conflicting configs
+577
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+7.66
+Conflicting right std
+14.16
+Conflicting right max
+78
+Conflicting right min
+0
+
+Conflicting wrong mean
+24.35
+Conflicting wrong std
+20.04
+Conflicting wrong max
+78
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+7013
+Number of wrong predictions of the average of configs
+2987
+Number of wrong predictions if we take the 2nd class when we're wrong
+1517
+Number of wrong predictions if we take the 3rd class when we're wrong
+898
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+130
+When only dropout gets it right
+37
+When only the average gets it right
+45
+When both methods give wrong predictions
+48
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+7017
+Right predictions from the arithmetic mean
+7029
+Right predictions from the median
+7026
+
+Number of predictions with at least 1 conflicting configs
+5997
+Number of predictions with at least 25 conflicting configs
+2612
+Number of predictions with at least 50 conflicting configs
+693
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+8.62
+Conflicting right std
+15.04
+Conflicting right max
+79
+Conflicting right min
+0
+
+Conflicting wrong mean
+27.19
+Conflicting wrong std
+20.01
+Conflicting wrong max
+86
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+7029
+Number of wrong predictions of the average of configs
+2971
+Number of wrong predictions if we take the 2nd class when we're wrong
+1558
+Number of wrong predictions if we take the 3rd class when we're wrong
+908
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+141
+When only dropout gets it right
+41
+When only the average gets it right
+53
+When both methods give wrong predictions
+47
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+7031
+Right predictions from the arithmetic mean
+7043
+Right predictions from the median
+7045
+
+Number of predictions with at least 1 conflicting configs
+5914
+Number of predictions with at least 25 conflicting configs
+2662
+Number of predictions with at least 50 conflicting configs
+680
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+8.63
+Conflicting right std
+15.04
+Conflicting right max
+90
+Conflicting right min
+0
+
+Conflicting wrong mean
+27.28
+Conflicting wrong std
+20.02
+Conflicting wrong max
+82
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+7043
+Number of wrong predictions of the average of configs
+2957
+Number of wrong predictions if we take the 2nd class when we're wrong
+1501
+Number of wrong predictions if we take the 3rd class when we're wrong
+894
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+144
+When only dropout gets it right
+41
+When only the average gets it right
+53
+When both methods give wrong predictions
+50
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+6829
+Right predictions from the arithmetic mean
+6816
+Right predictions from the median
+6815
+
+Number of predictions with at least 1 conflicting configs
+5956
+Number of predictions with at least 25 conflicting configs
+2587
+Number of predictions with at least 50 conflicting configs
+681
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+8.26
+Conflicting right std
+14.77
+Conflicting right max
+75
+Conflicting right min
+0
+
+Conflicting wrong mean
+26.15
+Conflicting wrong std
+19.99
+Conflicting wrong max
+88
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+6816
+Number of wrong predictions of the average of configs
+3184
+Number of wrong predictions if we take the 2nd class when we're wrong
+1649
+Number of wrong predictions if we take the 3rd class when we're wrong
+970
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+134
+When only dropout gets it right
+53
+When only the average gets it right
+40
+When both methods give wrong predictions
+41
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+6858
+Right predictions from the arithmetic mean
+6863
+Right predictions from the median
+6850
+
+Number of predictions with at least 1 conflicting configs
+6409
+Number of predictions with at least 25 conflicting configs
+2936
+Number of predictions with at least 50 conflicting configs
+891
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+9.85
+Conflicting right std
+15.90
+Conflicting right max
+85
+Conflicting right min
+0
+
+Conflicting wrong mean
+29.30
+Conflicting wrong std
+20.54
+Conflicting wrong max
+89
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+6863
+Number of wrong predictions of the average of configs
+3137
+Number of wrong predictions if we take the 2nd class when we're wrong
+1683
+Number of wrong predictions if we take the 3rd class when we're wrong
+1046
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+142
+When only dropout gets it right
+47
+When only the average gets it right
+52
+When both methods give wrong predictions
+43
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+6982
+Right predictions from the arithmetic mean
+6992
+Right predictions from the median
+7001
+
+Number of predictions with at least 1 conflicting configs
+6199
+Number of predictions with at least 25 conflicting configs
+2756
+Number of predictions with at least 50 conflicting configs
+714
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+9.03
+Conflicting right std
+15.02
+Conflicting right max
+76
+Conflicting right min
+0
+
+Conflicting wrong mean
+27.95
+Conflicting wrong std
+20.23
+Conflicting wrong max
+82
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+6992
+Number of wrong predictions of the average of configs
+3008
+Number of wrong predictions if we take the 2nd class when we're wrong
+1554
+Number of wrong predictions if we take the 3rd class when we're wrong
+902
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+162
+When only dropout gets it right
+48
+When only the average gets it right
+58
+When both methods give wrong predictions
+56
+
+
+
+---------------RUN START---------------
+
+
+Right predictions from standard dropout
+6946
+Right predictions from the arithmetic mean
+6955
+Right predictions from the median
+6947
+
+Number of predictions with at least 1 conflicting configs
+6221
+Number of predictions with at least 25 conflicting configs
+2791
+Number of predictions with at least 50 conflicting configs
+749
+Number of predictions with at least 100 conflicting configs
+0
+Number of predictions with at least 200 conflicting configs
+0
+
+Conflicting right mean
+9.24
+Conflicting right std
+15.41
+Conflicting right max
+79
+Conflicting right min
+0
+
+Conflicting wrong mean
+28.10
+Conflicting wrong std
+19.96
+Conflicting wrong max
+79
+Conflicting wrong min
+0
+
+Number of right predictions of the average of configs
+6955
+Number of wrong predictions of the average of configs
+3045
+Number of wrong predictions if we take the 2nd class when we're wrong
+1600
+Number of wrong predictions if we take the 3rd class when we're wrong
+899
+
+Number of predictions where avg/dropout are conflicting using 100 samples
+165
+When only dropout gets it right
+49
+When only the average gets it right
+58
+When both methods give wrong predictions
+58
+
