@@ -377,8 +377,8 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
             We will then use the sum of the configs as output. This implements a voting system.
             
             In case of a draw for highest value, we will replace these by average output.
-            A better way of doing this may be to compute a score (for example seeing if it is second when it is wrong)
-            """
+            A possibly better way of doing this may be to compute a score (for example seeing if it is second when it is wrong)
+            
             voting = np.zeros((input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
 
             for i in range(dropout_samples):
@@ -394,10 +394,11 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
                         changed = True
                 if changed:
                     voting[j][max] = output_mean[j][max]
+            """
 
             """
             Here is the scoring system I described in my thesis.
-            
+            """
             dist_mean = np.empty((input.size(0), dropout_samples), dtype=np.float32)
             dist_max = np.zeros(input.size(0), dtype=np.float32)
             config_coeffs = np.empty((input.size(0), dropout_samples), dtype=np.float32)
@@ -405,6 +406,37 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
             for i in range(dropout_samples):
                 for j in range(input.size(0)):
                     dist_mean[j][i] = ((output_configs[i][j] - val_mean[output_configs[i][j].argmax()]) ** 2).sum()
+                    if dist_mean[j][i] > dist_max[j]:
+                        dist_max[j] = dist_mean[j][i]
+
+            for j in range(input.size(0)):
+                a = 1
+                b = 1
+                # here we could also try different values for a and b to get different ranges of outputs
+                # this seems the most logical since the values will stay between 0 and 1 (either we are confident in the
+                # output of a subnetwork or we're not)
+                config_coeffs[j] = (a * dist_max[j] - b * dist_mean[j]) / dist_max[j]
+
+            config_coeffs = config_coeffs.transpose()
+
+            for i in range(dropout_samples):
+                for j in range(input.size(0)):
+                    output_configs[i][j] = output_configs[i][j] * config_coeffs[i][j]
+
+            output_mean = np.sum(output_configs, axis=0)
+
+
+            """
+            Here is the scoring system I described in my thesis. Except that we use the mean standard deviation
+            for each class instead of the mean output.
+            
+            dist_mean = np.empty((input.size(0), dropout_samples), dtype=np.float32)
+            dist_max = np.zeros(input.size(0), dtype=np.float32)
+            config_coeffs = np.empty((input.size(0), dropout_samples), dtype=np.float32)
+
+            for i in range(dropout_samples):
+                for j in range(input.size(0)):
+                    dist_mean[j][i] = ((output_configs[i][j] - val_std[output_configs[i][j].argmax()]) ** 2).sum()
                     if dist_mean[j][i] > dist_max[j]:
                         dist_max[j] = dist_mean[j][i]
 
@@ -485,7 +517,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
                         output_mean[i] = output_configs[j][i]
             """
 
-            output = torch.from_numpy(voting)
+            output = torch.from_numpy(output_mean)
 
             if not no_cuda:
                 target_var = target_var.cuda()
@@ -507,7 +539,6 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
                     right_dropout += 1
                 if output_np[i].argmax() == target_var[i]:
                     right_mean += 1
-                    right_median += 1
 
         # Standard output computation
         else:
@@ -569,14 +600,20 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
 
         f.write("\n\n---------------RUN START---------------\n\n")
 
-        f.write("\nRight predictions from standard dropout\n")
-        f.write(str(right_dropout))
-        f.write("\nRight predictions from the arithmetic mean\n")
-        f.write(str(right_mean))
-        f.write("\nRight predictions from the median\n")
-        f.write(str(right_median) + "\n")
+        if dropout_samples == 1:
+            f.write("\nRight predictions from standard dropout\n")
+            f.write(str(right_dropout))
+            f.write("\nRight predictions from the subnetwork\n")
+            f.write(str(right_mean))
 
         if dropout_samples > 1:
+            f.write("\nRight predictions from standard dropout\n")
+            f.write(str(right_dropout))
+            f.write("\nRight predictions from the arithmetic mean\n")
+            f.write(str(right_mean))
+            f.write("\nRight predictions from the median\n")
+            f.write(str(right_median) + "\n")
+
             f.write("\nNumber of predictions with at least 1 conflicting configs\n")
             f.write(str(nb_conflicting)+"\n")
             f.write("Number of predictions with at least 25 conflicting configs\n")
@@ -760,7 +797,7 @@ def get_wrong_predictions(input_size, output, target):
     This function is used to count the number of wrong values and replaces the highest value by the minimal value
     when we are wrong.
 
-    It is used 3 times to return these 3 values :
+    It is used 3 times to return these 3 values:
     How often is the mean of outputs of subnetworks wrong?
     When we are wrong, how often is the second prediction the right one?
     When both top predictions are wrong, how often is the third prediction the right one?
@@ -793,7 +830,10 @@ def get_wrong_predictions(input_size, output, target):
 
 def get_conflicting_configs(input_size, output, target, samples, output_configs, conf_right, conf_wrong):
     """"
-
+    Function to count the number of subnetworks which don't give the same prediction than an output. I have mostly used
+    this to see when subnetworks are conflicting with what the mean of subnetworks predict. It also distinguishes the
+    subnetworks whether they give the right or wrong prediction from the target (in order to see if this can show good
+    from bad subnetworks).
 
 
     Parameters
@@ -812,20 +852,24 @@ def get_conflicting_configs(input_size, output, target, samples, output_configs,
         Array containing the results of the subnetworks for every input
 
     conf_right : np.array
-
+        Array containing the subnetworks that show the same prediction as the array output given as argument
 
     conf_wrong : np.array
-
+        Array containing the subnetworks that show another prediction than the array output given as argument
 
     Returns
     -------
     right_pred_mb :
+        Integer which contains the number of subnetworks which don't conflict with the output
 
     conf_right :
+        List of integers containing the nb of conflicting subnetworks for every input which gives the right prediction
 
     conf_wrong :
+        List of integers containing the nb of conflicting subnetworks for every input which gives the wrong prediction
 
     conflicting_configs :
+        List of integers containing all the nb of conflicting subnetworks for each input
 
     """
     conflicting_configs = np.zeros(input_size, dtype=np.int32)
