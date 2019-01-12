@@ -376,9 +376,10 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
             
             We will then use the sum of the configs as output. This implements a voting system.
             
-            In case of a draw for highest value, we will replace these by average output.
+            In case of a draw for highest value, we will add the average output to decide between the two.
             A possibly better way of doing this may be to compute a score (for example seeing if it is second when it is wrong)
-            
+            """
+
             voting = np.zeros((input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
 
             for i in range(dropout_samples):
@@ -390,15 +391,15 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
                 changed = False
                 for k in range(len(data_loader.dataset.classes)):
                     if voting[j][k] == voting[j][max] and max != k:
-                        voting[j][k] = output_mean[j][k]
+                        voting[j][k] += output_mean[j][k]
                         changed = True
                 if changed:
-                    voting[j][max] = output_mean[j][max]
-            """
+                    voting[j][max] += output_mean[j][max]
+
 
             """
             Here is the scoring system I described in my thesis.
-            """
+            
             dist_mean = np.empty((input.size(0), dropout_samples), dtype=np.float32)
             dist_max = np.zeros(input.size(0), dtype=np.float32)
             config_coeffs = np.empty((input.size(0), dropout_samples), dtype=np.float32)
@@ -424,7 +425,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
                     output_configs[i][j] = output_configs[i][j] * config_coeffs[i][j]
 
             output_mean = np.sum(output_configs, axis=0)
-
+            """
 
             """
             Here is the scoring system I described in my thesis. Except that we use the mean standard deviation
@@ -517,7 +518,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
                         output_mean[i] = output_configs[j][i]
             """
 
-            output = torch.from_numpy(output_mean)
+            output = torch.from_numpy(voting)
 
             if not no_cuda:
                 target_var = target_var.cuda()
