@@ -377,8 +377,9 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
             We will then use the sum of the configs as output. This implements a voting system.
             
             In case of a draw for highest value, we will add the average output to decide between the two.
-            A possibly better way of doing this may be to compute a score (for example seeing if it is second when it is wrong)
-            """
+            A possibly better way of doing this may be to compute a score (for example seeing if it is second when it is 
+            wrong)
+            
 
             voting = np.zeros((input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
 
@@ -395,7 +396,18 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
                         changed = True
                 if changed:
                     voting[j][max] += output_mean[j][max]
+            """
 
+            """
+            Second implementation of the voting system by applying the softmax function to the outputs of subnetworks
+            and using the sum.
+            """
+
+            voting = np.zeros((input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
+
+            for i in range(dropout_samples):
+                for j in range(input.size(0)):
+                    voting[j] += softmax(output_configs[i][j])
 
             """
             Here is the scoring system I described in my thesis.
