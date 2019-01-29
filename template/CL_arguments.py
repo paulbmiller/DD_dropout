@@ -285,9 +285,15 @@ def _dropout_options(parser):
     """
     Dropout options
     """
+    aggr_options = ["scoring", "voting", "smallest3", "max_diff3", "mult_top2", "softmax", "std", "max_diff_sub", "highest_sub"]
+
     parser_system = parser.add_argument_group('DROPOUT', 'Dropout Options')
     parser_system.add_argument('--dropout-samples',
                                type=int,
                                default=0,
                                help='how many samples of Dropout forward passes to use at test time')
+    parser_system.add_argument('--aggr',
+                              choices=aggr_options,
+                              default="scoring",
+                              help='the choice of aggregation method at test time')
 
