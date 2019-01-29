@@ -25,7 +25,8 @@ def test(test_loader, model, criterion, writer, epoch, val_mean, val_std, val_cl
     return _evaluate(test_loader, model, criterion, writer, epoch, 'test', val_mean, val_std, None, no_cuda, log_interval, **kwargs)
 
 
-def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_mean=None, val_std=None, val_classes=None, no_cuda=False, log_interval=10, dropout_samples=0, **kwargs):
+def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_mean=None, val_std=None,
+              val_classes=None, no_cuda=False, log_interval=10, dropout_samples=0, aggr="scoring", **kwargs):
     """
     The evaluation routine
 
@@ -104,25 +105,23 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
         wrong_predictions = 0
         wrong_predictions2 = 0
         wrong_predictions3 = 0
-        """
-        changed_wrong = 0
-        changed_right = 0
-        iterations = 0
-        """
+
+        if aggr == "std":
+            changed_wrong = 0
+            changed_right = 0
+            iterations = 0
+
         diff_predictions = 0
         dropout_right = 0
         at_least_one_right = 0
         both_wrong = 0
-        """
-        changed_to_dropout = 0
-        changed_to_median = 0
 
+        """
         conf_median_right = np.array([], dtype=np.int32)
         conf_median_wrong = np.array([], dtype=np.int32)
         right_pred_median = 0
         wrong_pred_median = 0
         """
-        #count_RRR, count_RRW, count_RWR, count_WWR, count_WWW, count_WRW, count_WRR, count_RWW = 0,0,0,0,0,0,0,0
 
     # Create the numpy array to count the number of validation examples for each class
     if logging_label == 'start_val':
@@ -259,8 +258,10 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
             right_predictions += right_pred_mean_mb
             wrong_predictions += get_wrong_predictions(input.size(0), out_mean, target)
 
-            # If we want to see the conflicting subnetworks for the median
+
             """
+            If we want to see the conflicting subnetworks for the median
+            
             right_pred_median_mb, wrong_pred_median_mb, conf_median_right, conf_median_wrong\
                 = get_conflicting_configs(input.size(0), out_median, target_var, dropout_samples, output_configs, conf_median_right, conf_median_wrong)
 
@@ -274,65 +275,75 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
 
             """
             From the 3 predictions dropout, mean and median, pick the one which has the smallest top value.
-            
-            for i in range(input.size(0)):
-                pred_drop = dropout_output_np[i].argmax()
-                pred_mean = output_mean[i].argmax()
-                pred_median = out_median[i].argmax()
-                
-                if dropout_output_np[i][pred_drop] < output_mean[i][pred_mean]:
-                    output_mean[i] = dropout_output_np[i]
-                    pred_mean = pred_drop
-                    changed_to_dropout += 1
-                
-                if output_mean[i][pred_mean] > out_median[i][pred_median]:
-                    output_mean[i] = out_median[i]
-                    changed_to_median += 1
+            This method only reduced accuracy and I wasn't able to get any useful information out of it.
+            Also tried the converse to get similar results.
             """
+
+            if aggr == "smallest3":
+                for i in range(input.size(0)):
+                    pred_drop = dropout_output_np[i].argmax()
+                    pred_mean = output_mean[i].argmax()
+                    pred_median = out_median[i].argmax()
+
+                    if dropout_output_np[i][pred_drop] < output_mean[i][pred_mean]:
+                        output_mean[i] = dropout_output_np[i]
+                        pred_mean = pred_drop
+
+                    if output_mean[i][pred_mean] > out_median[i][pred_median]:
+                        output_mean[i] = out_median[i]
+
 
             """
             From the 3 predictions dropout, mean and median, pick the one which has the biggest difference between the
             top 2 values.
-
-            for i in range(input.size(0)):
-                top_drop = dropout_output_np[i].argsort()[-len(data_loader.dataset.classes):][::-1]
-                top_mean = output_mean[i].argsort()[-len(data_loader.dataset.classes):][::-1]
-                top_median = out_median[i].argsort()[-len(data_loader.dataset.classes):][::-1]
-                
-                diff_drop = dropout_output_np[i][top_drop[0]] - dropout_output_np[i][top_drop[1]]
-                diff_mean = output_mean[i][top_mean[0]] - output_mean[i][top_mean[1]]
-                diff_median = out_median[i][top_median[0]] - out_median[i][top_median[1]]
-                
-                if diff_drop < diff_mean:
-                    output_mean[i] = dropout_output_np[i]
-                    diff_mean = diff_drop
-                
-                if diff_median < diff_mean:
-                    output_mean[i] = out_median[i]
+            The idea was that this would be the output which is the most confident. Results were inconclusive.
+            Also tried the converse to get similar results.
             """
+
+            if aggr == "max_diff3":
+                for i in range(input.size(0)):
+                    top_drop = dropout_output_np[i].argsort()[-len(data_loader.dataset.classes):][::-1]
+                    top_mean = output_mean[i].argsort()[-len(data_loader.dataset.classes):][::-1]
+                    top_median = out_median[i].argsort()[-len(data_loader.dataset.classes):][::-1]
+
+                    diff_drop = dropout_output_np[i][top_drop[0]] - dropout_output_np[i][top_drop[1]]
+                    diff_mean = output_mean[i][top_mean[0]] - output_mean[i][top_mean[1]]
+                    diff_median = out_median[i][top_median[0]] - out_median[i][top_median[1]]
+
+                    if diff_drop < diff_mean:
+                        output_mean[i] = dropout_output_np[i]
+                        diff_mean = diff_drop
+
+                    if diff_median < diff_mean:
+                        output_mean[i] = out_median[i]
 
             """
             Multiply the top two values by the standard deviation of the other top value. This is in order to give more
             importance to the value that doesn't fluctuate. We do this only when there is at least one of the dropout
             configurations which have a different prediction value than the mean of all configurations.
             
-            for i in range(input.size(0)):
-                if conflicting_configs[i] > 0:
-                    iterations += 1
-                    top = output_mean[i].argsort()[-len(data_loader.dataset.classes):][::-1]
-                    output_mean[i][top[0]] = output_mean[i][top[0]] * (output_std[i][top[1]]+1)
-                    output_mean[i][top[1]] = output_mean[i][top[1]] * (output_std[i][top[0]]+1)
-                    if output_mean[i][top[1]] > output_mean[i][top[0]]:
-                        print("\nNew outputs: %0.2f, %0.2f\n" % (output_mean[i][top[0]], output_mean[i][top[1]]))
-                        print("Changed from first prediction to second\n")
-                        changed += 1
+            Results showed this did not help prevent classification errors but only added more.
             """
 
+            if aggr == "mult_top2":
+                for i in range(input.size(0)):
+                    if conflicting_configs[i] > 0:
+                        iterations += 1
+                        top = output_mean[i].argsort()[-len(data_loader.dataset.classes):][::-1]
+                        output_mean[i][top[0]] = output_mean[i][top[0]] * (output_std[i][top[1]]+1)
+                        output_mean[i][top[1]] = output_mean[i][top[1]] * (output_std[i][top[0]]+1)
+
             """
-            Get the distance between the output and the mean during validation using the squared euclidian distance to
-            see if it looks like the mean of the outputs we had during validation or not, but only if the Dropout configs
-            are giving conflicting predictions. We do the same for the standard deviation.
+            Get the distance between the output and the mean during validation using the squared euclidian distance 
+            between the mean output during validation and the mean of subnetworks to see what class it looks like the 
+            most. We do the same for the standard deviation.
             
+            The idea is that maybe our output, even though it has highest output for some class, may look more like the
+            output of another class and we may fix this.
+            
+            We used two basic counters to count the number of examples such a method would get right.
+            
+            Results showed this did not work.
 
             dist_mean = np.empty((input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
             dist_std = np.empty((input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
@@ -346,128 +357,119 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
             preds_val_std = dist_std.argmax(axis=1)
             
             for i in range(input.size(0)):
-                if conflicting_configs[i] > 0:
-                    if output_mean[i].argmax() == target_var[i]:
-                        if preds_val_mean[i] == target_var[i]:
-                            if preds_val_std[i] == target_var[i]:
-                                count_RRR += 1
-                            else:
-                                count_RRW += 1
-                        else:
-                            if preds_val_std[i] == target_var[i]:
-                                count_RWR += 1
-                            else:
-                                count_RWW += 1
-                    else:
-                        if preds_val_mean[i] == target_var[i]:
-                            if preds_val_std[i] == target_var[i]:
-                                count_WRR += 1
-                            else:
-                                count_WRW += 1
-                        else:
-                            if preds_val_std[i] == target_var[i]:
-                                count_WWR += 1
-                            else:
-                                count_WWW += 1
+                if preds_val_mean[i] == target_var[i]:
+                    sqdiff_mean += 1
+                if preds_val_std[i] == target_var[i]:
+                    sqdiff_std += 1
             """
 
             """
-            Simple scoring that reduces the outputs of configs to an array with only one one.
+            Simple voting system that reduces the outputs of configs to an array with only one one.
             
-            We will then use the sum of the configs as output. This implements a voting system.
+            We will then use the sum of the array over all classes as output.
             
             In case of a draw for highest value, we will add the average output to decide between the two.
-            A possibly better way of doing this may be to compute a score (for example seeing if it is second when it is 
-            wrong)
-            
-
-            voting = np.zeros((input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
-
-            for i in range(dropout_samples):
-                for j in range(input.size(0)):
-                    voting[j][output_configs[i][j].argmax()] += 1
-
-            for j in range(input.size(0)):
-                max = voting[j].argmax()
-                changed = False
-                for k in range(len(data_loader.dataset.classes)):
-                    if voting[j][k] == voting[j][max] and max != k:
-                        voting[j][k] += output_mean[j][k]
-                        changed = True
-                if changed:
-                    voting[j][max] += output_mean[j][max]
             """
+            
+            if aggr == "voting":
+                voting = np.zeros((input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
+
+                for i in range(dropout_samples):
+                    for j in range(input.size(0)):
+                        voting[j][output_configs[i][j].argmax()] += 1
+
+                for j in range(input.size(0)):
+                    max = voting[j].argmax()
+                    is_draw = False
+                    for k in range(len(data_loader.dataset.classes)):
+                        if voting[j][k] == voting[j][max] and max != k:
+                            voting[j][k] += output_mean[j][k]
+                            is_draw = True
+                    if is_draw:
+                        voting[j][max] += output_mean[j][max]
+
 
             """
             Second implementation of the voting system by applying the softmax function to the outputs of subnetworks
             and using the sum.
             """
+            if aggr == "softmax":
+                voting = np.zeros((input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
 
-            voting = np.zeros((input.size(0), len(data_loader.dataset.classes)), dtype=np.float32)
+                for i in range(dropout_samples):
+                    for j in range(input.size(0)):
+                        voting[j] += softmax(output_configs[i][j])
 
-            for i in range(dropout_samples):
-                for j in range(input.size(0)):
-                    voting[j] += softmax(output_configs[i][j])
 
             """
             Here is the scoring system I described in my thesis.
             
-            dist_mean = np.empty((input.size(0), dropout_samples), dtype=np.float32)
-            dist_max = np.zeros(input.size(0), dtype=np.float32)
-            config_coeffs = np.empty((input.size(0), dropout_samples), dtype=np.float32)
-
-            for i in range(dropout_samples):
-                for j in range(input.size(0)):
-                    dist_mean[j][i] = ((output_configs[i][j] - val_mean[output_configs[i][j].argmax()]) ** 2).sum()
-                    if dist_mean[j][i] > dist_max[j]:
-                        dist_max[j] = dist_mean[j][i]
-
-            for j in range(input.size(0)):
-                a = 1
-                b = 1
-                # here we could also try different values for a and b to get different ranges of outputs
-                # this seems the most logical since the values will stay between 0 and 1 (either we are confident in the
-                # output of a subnetwork or we're not)
-                config_coeffs[j] = (a * dist_max[j] - b * dist_mean[j]) / dist_max[j]
-
-            config_coeffs = config_coeffs.transpose()
-
-            for i in range(dropout_samples):
-                for j in range(input.size(0)):
-                    output_configs[i][j] = output_configs[i][j] * config_coeffs[i][j]
-
-            output_mean = np.sum(output_configs, axis=0)
+            I used the output_mean array to store the final result so I didn't need to create a new array of the same
+            size since we don't need the average of outputs later in the script.
             """
+
+            if aggr == "scoring":
+                dist_mean = np.empty((input.size(0), dropout_samples), dtype=np.float32)
+                dist_max = np.zeros(input.size(0), dtype=np.float32)
+                config_coeffs = np.empty((input.size(0), dropout_samples), dtype=np.float32)
+
+                for i in range(dropout_samples):
+                    for j in range(input.size(0)):
+                        dist_mean[j][i] = ((output_configs[i][j] - val_mean[output_configs[i][j].argmax()]) ** 2).sum()
+                        if dist_mean[j][i] > dist_max[j]:
+                            dist_max[j] = dist_mean[j][i]
+
+                for j in range(input.size(0)):
+                    a = 1
+                    b = 1
+                    # here we could also try different values for a and b to get different ranges of outputs
+                    # this seems the most logical since the values will stay between 0 and 1 (either we are confident
+                    # in the output of a subnetwork or we are not)
+                    config_coeffs[j] = (a * dist_max[j] - b * dist_mean[j]) / dist_max[j]
+
+                config_coeffs = config_coeffs.transpose()
+
+                for i in range(dropout_samples):
+                    for j in range(input.size(0)):
+                        output_configs[i][j] = output_configs[i][j] * config_coeffs[i][j]
+
+                output_mean = np.sum(output_configs, axis=0)
+
 
             """
             Here is the scoring system I described in my thesis. Except that we use the mean standard deviation
             for each class instead of the mean output.
             
-            dist_mean = np.empty((input.size(0), dropout_samples), dtype=np.float32)
-            dist_max = np.zeros(input.size(0), dtype=np.float32)
-            config_coeffs = np.empty((input.size(0), dropout_samples), dtype=np.float32)
+            Results showed this was not reliable.
+            
 
-            for i in range(dropout_samples):
+            if aggr == "scoring_std":
+                dist_mean = np.empty((input.size(0), dropout_samples), dtype=np.float32)
+                dist_max = np.zeros(input.size(0), dtype=np.float32)
+                config_coeffs = np.empty((input.size(0), dropout_samples), dtype=np.float32)
+
+                for i in range(dropout_samples):
+                    for j in range(input.size(0)):
+                        dist_mean[j][i] = ((output_configs[i][j] - val_std[output_configs[i][j].argmax()]) ** 2).sum()
+                        if dist_mean[j][i] > dist_max[j]:
+                            dist_max[j] = dist_mean[j][i]
+
                 for j in range(input.size(0)):
-                    dist_mean[j][i] = ((output_configs[i][j] - val_std[output_configs[i][j].argmax()]) ** 2).sum()
-                    if dist_mean[j][i] > dist_max[j]:
-                        dist_max[j] = dist_mean[j][i]
+                    a = 1
+                    b = 1
+                    # here we could also try different values for a and b to get different ranges of outputs
+                    # this seems the most logical since the values will stay between 0 and 1 (either we are confident
+                    # in the output of a subnetwork or we are not)
+                    config_coeffs[j] = (a * dist_max[j] - b * dist_mean[j]) / dist_max[j]
 
-            for j in range(input.size(0)):
-                a = 1
-                b = 1
-                # here we could also try different values for a and b to get different ranges of outputs
-                # this seems the most logical since the values will stay between 0 and 1 (either we are confident in the
-                # output of a subnetwork or we're not)
-                config_coeffs[j] = (a * dist_max[j] - b * dist_mean[j]) / dist_max[j]
+                config_coeffs = config_coeffs.transpose()
 
-            config_coeffs = config_coeffs.transpose()
+                for i in range(dropout_samples):
+                    for j in range(input.size(0)):
+                        output_configs[i][j] = output_configs[i][j] * config_coeffs[i][j]
 
-            for i in range(dropout_samples):
-                for j in range(input.size(0)):
-                    output_configs[i][j] = output_configs[i][j] * config_coeffs[i][j]
+                output_mean = np.sum(output_configs, axis=0)
 
-            output_mean = np.sum(output_configs, axis=0)
             """
 
             """
@@ -476,61 +478,71 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
             when there is a certain number of subnetworks in disagreement with the mean.
             
             I also added some counters to see in which cases I changed to the right prediction and in which cases I
-            changed it to the wrong prediction.
-            
-            for i in range(input.size(0)):
-                if conflicting_configs[i] > 100:
-                    pred = output_mean[i].argmax()
-                    iterations += 1
-
-                    output_mean[i] = output_mean[i] / val_std[pred] * output_std[i]
-
-                    pred2 = output_mean[i].argmax()
-
-                    if pred != pred2:
-                        if pred == target_var[i]:
-                            changed_wrong += 1
-                        elif pred2 == target_var[i]:
-                            changed_right += 1
+            changed it to the wrong prediction. Results showed that we add a lot more errors than we fix, no matter what
+            threshold of conflicting subnetworks we choose.
             """
+
+            if aggr == "std":
+                for i in range(input.size(0)):
+                    if conflicting_configs[i] > 100:
+                        pred = output_mean[i].argmax()
+                        iterations += 1
+
+                        output_mean[i] = output_mean[i] / val_std[pred] * output_std[i]
+
+                        pred2 = output_mean[i].argmax()
+
+                        if pred != pred2:
+                            if pred == target_var[i]:
+                                changed_wrong += 1
+                            elif pred2 == target_var[i]:
+                                changed_right += 1
+
 
             """
             Take the config with the most difference between the top 2 values (hoping to get the config that looks less
             like other options)
             => Drop of ~5% accuracy on CIFAR-10
-            
-            for i in range(input.size(0)):
-                max_diff = 0
-                for j in range(dropout_samples):
-                    idx = (-output_configs[j][i]).argsort()
-                    for id in range(len(idx)):
-                        if idx[id] == 0:
-                            top_val = output_configs[j][i][id]
-                        elif idx[id] == 1:
-                            top2_val = output_configs[j][i][id]
-                    diff = top_val - top2_val
-                    if max_diff < diff:
-                        max_diff = diff
-                        output_mean[i] = output_configs[j][i]
             """
+
+            if aggr == "max_diff_sub":
+                for i in range(input.size(0)):
+                    max_diff = 0
+                    for j in range(dropout_samples):
+                        idx = (-output_configs[j][i]).argsort()
+                        for id in range(len(idx)):
+                            if idx[id] == 0:
+                                top_val = output_configs[j][i][id]
+                            elif idx[id] == 1:
+                                top2_val = output_configs[j][i][id]
+                        diff = top_val - top2_val
+                        if max_diff < diff:
+                            max_diff = diff
+                            output_mean[i] = output_configs[j][i]
+
 
             """
             Use the config that has the highest top value (hoping to get the config that is most sure of itself
             => Drop of ~5% accuracy on CIFAR-10
-            
-            for i in range(input.size(0)):
-                top_val = 0
-                for j in range(dropout_samples):
-                    idx = (-output_configs[j][i]).argsort()
-                    for id in range(len(idx)):
-                        if idx[id] == 0:
-                            top_val_config = output_configs[j][i][id]
-                    if top_val_config > top_val:
-                        top_val = top_val_config
-                        output_mean[i] = output_configs[j][i]
             """
 
-            output = torch.from_numpy(voting)
+            if aggr == "highest_sub":
+                for i in range(input.size(0)):
+                    top_val = 0
+                    for j in range(dropout_samples):
+                        idx = (-output_configs[j][i]).argsort()
+                        for id in range(len(idx)):
+                            if idx[id] == 0:
+                                top_val_config = output_configs[j][i][id]
+                        if top_val_config > top_val:
+                            top_val = top_val_config
+                            output_mean[i] = output_configs[j][i]
+
+            if aggr == "voting" or aggr == "softmax":
+                output = torch.from_numpy(voting)
+
+            else:
+                output = torch.from_numpy(output_mean)
 
             if not no_cuda:
                 target_var = target_var.cuda()
@@ -699,21 +711,12 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
             f.write("When both methods give wrong predictions\n")
             f.write(str(both_wrong) + "\n\n")
 
-            """
-            f.write("\nRRR = the mean gets it Right, the least diff with the mean gets it Right, the least diff with the std get it Right\n")
-            f.write(str(count_RRR) + '\n')
-            f.write(str(count_RRW) + '\n')
-            f.write(str(count_RWR) + '\n')
-            f.write(str(count_RWW) + '\n')
-            f.write(str(count_WRR) + '\n')
-            f.write(str(count_WRW) + '\n')
-            f.write(str(count_WWR) + '\n')
-            f.write(str(count_WWW) + "\n\n")
-            """
 
         f.close()
 
         """
+        If we want to log the mean output or the standard deviation of outputs during the last epoch of validation
+        
         f = open("log/predictions_info.txt", 'ab')
 
         np.savetxt(f, val_mean, delimiter=', ', header="Mean of outputs for every class during validation", fmt='%0.2f')
@@ -872,16 +875,16 @@ def get_conflicting_configs(input_size, output, target, samples, output_configs,
 
     Returns
     -------
-    right_pred_mb :
+    right_pred_mb : int
         Integer which contains the number of subnetworks which don't conflict with the output
 
-    conf_right :
+    conf_right : np.array
         List of integers containing the nb of conflicting subnetworks for every input which gives the right prediction
 
-    conf_wrong :
+    conf_wrong : np.array
         List of integers containing the nb of conflicting subnetworks for every input which gives the wrong prediction
 
-    conflicting_configs :
+    conflicting_configs : np.array
         List of integers containing all the nb of conflicting subnetworks for each input
 
     """
