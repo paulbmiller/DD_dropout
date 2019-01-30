@@ -109,7 +109,6 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
         if aggr == "std":
             changed_wrong = 0
             changed_right = 0
-            iterations = 0
 
         diff_predictions = 0
         dropout_right = 0
@@ -178,10 +177,6 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
                 with torch.no_grad():
                     output_configs[i] = model(input_var)
 
-            # Array of shape (batch_size, nb_classes) containing the standard deviation of outputs the subnetworks
-            # which shows the reliability of each subnetwork
-            # output_std = output_configs.std(axis=0)
-
             # Array of shape (batch_size, nb_classes) containing the mean of the outputs of the subnetworks
             output_mean = np.mean(output_configs, axis=0)
             out_median = np.median(output_configs, axis=0)
@@ -194,10 +189,6 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
                     right_mean += 1
                 if out_median[i].argmax() == target_var[i]:
                     right_median += 1
-
-            # Array of shape (batch_size,) containing the mean of the standard variation of values of the mini-batch
-            #  in order to not change the values drastically
-            # output_std_mean = output_std.mean(axis=1)
 
             target_var = target_var.cpu()
 
@@ -280,6 +271,7 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
             """
 
             if aggr == "smallest3":
+
                 for i in range(input.size(0)):
                     pred_drop = dropout_output_np[i].argmax()
                     pred_mean = output_mean[i].argmax()
@@ -328,7 +320,6 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
             if aggr == "mult_top2":
                 for i in range(input.size(0)):
                     if conflicting_configs[i] > 0:
-                        iterations += 1
                         top = output_mean[i].argsort()[-len(data_loader.dataset.classes):][::-1]
                         output_mean[i][top[0]] = output_mean[i][top[0]] * (output_std[i][top[1]]+1)
                         output_mean[i][top[1]] = output_mean[i][top[1]] * (output_std[i][top[0]]+1)
@@ -483,10 +474,16 @@ def _evaluate(data_loader, model, criterion, writer, epoch, logging_label, val_m
             """
 
             if aggr == "std":
+                # Array of shape (batch_size, nb_classes) containing the standard deviation of outputs the subnetworks
+                output_std = output_configs.std(axis=0)
+
+                # Array of shape (batch_size,) containing the mean of the standard variation of values of the mini-batch
+                #  in order to not change the values drastically
+                # output_std_mean = output_std.mean(axis=1)
+
                 for i in range(input.size(0)):
                     if conflicting_configs[i] > 100:
                         pred = output_mean[i].argmax()
-                        iterations += 1
 
                         output_mean[i] = output_mean[i] / val_std[pred] * output_std[i]
 
